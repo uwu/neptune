@@ -165,9 +165,7 @@ Object.defineProperty(window, "webpackChunk_tidal_web", {
                                 }
                               }
 
-                              if (shouldDispatch) return orig.apply(ctxt, args);
-
-                              return { type: "NOOP" };
+                              return shouldDispatch ? orig.apply(ctxt, args) : { type: "NOOP"} ;
                             },
                           });
                         });
