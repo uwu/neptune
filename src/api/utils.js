@@ -5,7 +5,7 @@ export function appendStyle(style) {
   document.head.appendChild(styleTag);
 
   return (newStyle) => {
-    if (!newStyle) return document.head.removeChild(styleTag);
+    if (newStyle == undefined) return document.head.removeChild(styleTag);
 
     styleTag.innerHTML = newStyle;
   };

@@ -15,10 +15,11 @@ let patchedPush = false;
 let webpackObject;
 
 // Exfiltrations gained from hooking into webpack.
+let patchedPrepareAction = false;
 let exfiltratedStore;
 
 // Built action handlers
-let actions = {};
+export const actions = {};
 windowObject.actions = actions;
 
 const getModulesFromWpRequire = (wpRequire) =>
@@ -96,6 +97,8 @@ Object.defineProperty(window, "webpackChunk_tidal_web", {
                       } catch {}
 
                       try {
+                        if (patchedPrepareAction) return;
+
                         let found = Object.entries(resp).find(
                           ([, possiblyPrepareAction]) =>
                             possiblyPrepareAction
@@ -107,6 +110,7 @@ Object.defineProperty(window, "webpackChunk_tidal_web", {
 
                         if (!found) return;
 
+                        patchedPrepareAction = true;
                         patcher.after(found[0], resp, ([type], resp) => {
                           if (!interceptors[type]) interceptors[type] = [];
 
