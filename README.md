@@ -6,7 +6,7 @@ neptune is an experimental client mod for TIDAL that provides a simple plugin an
 ## how can i install neptune?
 neptune currently does not have any builds publicly available.
 
-To build neptune yourself, simply `git clone git@github.com:uwu/neptune`, run `npm install`, and then run `npm run build`. The resulting build will be in `dist/dist.js`.
+To build neptune yourself, simply `git clone git@github.com:uwu/neptune`, run `npm install`, and then run `npm run build`. The resulting build will be in `dist/neptune.js`.
 
 Note that neptune **MUST** run before any of TIDAL's code runs, and therefore is best tested with `// @run-at document-start` in your UserScript manager of choice. (Preferably ViolentMonkey)
 

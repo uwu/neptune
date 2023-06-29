@@ -1,6 +1,5 @@
 import intercept from "./intercept";
 import { observe } from "./observe";
-import { appendStyle } from "./utils";
 
 function makeInactive(tab) {
   tab.classList.remove(
@@ -11,20 +10,14 @@ function makeInactive(tab) {
 const getTabs = () =>
   document.querySelector(`.sidebarWrapper section[class^="section--"]`);
 
-appendStyle(`
-.__NEPTUNE_HIDE {
-  display: none !important;
-}
-`);
-
 const pageNotFoundSelector = `[class^="contentArea--"] [class^="pageNotFoundError--"]`;
 
 // Automatically unhide hidden elements and clear out our pages.
 intercept("ROUTER_LOCATION_CHANGED", () => {
   try {
     document
-      .querySelectorAll(".__NEPTUNE_HIDE")
-      .classList.remove("__NEPTUNE_HIDE");
+      .querySelectorAll(pageNotFoundSelector)
+      .style.display = "block";
   } catch {}
 
   const neptunePage = document.querySelector(".__NEPTUNE_PAGE");
@@ -62,7 +55,7 @@ export default function registerTab(name, path, component = () => {}) {
           tab.style.color = "var(--wave-color-solid-accent-fill)";
 
           const showTab = (page) => {
-            page.classList.add("__NEPTUNE_HIDE");
+            page.style.display = "none";
 
             const neptunePage = document.createElement("div");
             neptunePage.className = "__NEPTUNE_PAGE";
@@ -75,7 +68,7 @@ export default function registerTab(name, path, component = () => {}) {
           if (pageNotFound) return showTab(pageNotFound);
 
           const unob = observe(pageNotFoundSelector, (page) => {
-            unob();
+            unob.now();
             showTab(page);
           });
         } else {
