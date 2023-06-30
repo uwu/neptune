@@ -163,7 +163,7 @@ Object.defineProperty(window, "webpackChunk_tidal_web", {
                                     shouldDispatch = !shouldDispatch;
                                 } catch (e) {
                                   console.error(
-                                    "Failed to load interceptor!\n",
+                                    "Failed to run interceptor!\n",
                                     e
                                   );
                                 }

@@ -1,3 +1,4 @@
+import registerRoute from "./registerRoute";
 import intercept from "./intercept";
 import { observe } from "./observe";
 
@@ -10,18 +11,10 @@ function makeInactive(tab) {
 const getTabs = () =>
   document.querySelector(`.sidebarWrapper section[class^="section--"]`);
 
-const pageNotFoundSelector = `[class^="contentArea--"] [class^="pageNotFoundError--"]`;
-
-// Automatically unhide hidden elements and clear out our pages.
+// Automatically set tab to unchecked.
 intercept("ROUTER_LOCATION_CHANGED", () => {
-  try {
-    document
-      .querySelectorAll(pageNotFoundSelector)
-      .style.display = "block";
-  } catch {}
-
-  const neptunePage = document.querySelector(".__NEPTUNE_PAGE");
-  if (neptunePage) neptunePage.parentElement.removeChild(neptunePage);
+  for (const tab of document.getElementsByClassName("__NEPTUNE_TAB"))
+    tab.style.color = "";
 });
 
 /*
@@ -48,34 +41,11 @@ export default function registerTab(name, path, component = () => {}) {
       });
     });
 
-    const removeRouteHandler = neptune.intercept(
-      "ROUTER_LOCATION_CHANGED",
-      ([payload]) => {
-        if (payload.pathname == `/neptune/${path}`) {
-          tab.style.color = "var(--wave-color-solid-accent-fill)";
+    const removeRouteHandler = registerRoute(path, (page) => {
+      tab.style.color = "var(--wave-color-solid-accent-fill)";
 
-          const showTab = (page) => {
-            page.style.display = "none";
-
-            const neptunePage = document.createElement("div");
-            neptunePage.className = "__NEPTUNE_PAGE";
-
-            page.insertAdjacentElement("afterend", neptunePage);
-            component(neptunePage);
-          };
-
-          const pageNotFound = document.querySelector(pageNotFoundSelector);
-          if (pageNotFound) return showTab(pageNotFound);
-
-          const unob = observe(pageNotFoundSelector, (page) => {
-            unob.now();
-            showTab(page);
-          });
-        } else {
-          tab.style.color = "";
-        }
-      }
-    );
+      component(page);
+    });
 
     tabs.appendChild(tab);
     unobservers.push(removeRouteHandler, () => tabs.removeChild(tab));

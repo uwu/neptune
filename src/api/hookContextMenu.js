@@ -4,7 +4,7 @@ import { observe } from "./observe";
 export default function hookContextMenu(menuType, name, handler) {
   return intercept("contextMenu/OPEN", ([payload]) => {
     // TODO: Change this to a switch statement.
-    if (!payload?.type == menuType) return;
+    if (payload?.type != menuType) return;
 
     const unob = observe(`[data-type="contextmenu-item"]`, (elem) => {
       unob.now();
