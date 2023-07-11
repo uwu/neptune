@@ -1,19 +1,15 @@
-import registerRoute from "./registerRoute";
-import intercept from "./intercept";
+import registerRoute from "./registerRoute.js";
+import intercept from "./intercept.js";
 
 function makeInactive(tab) {
-  tab.classList.remove(
-    Array.from(tab.classList).find((c) => c.startsWith("activeItem--"))
-  );
+  tab.classList.remove(Array.from(tab.classList).find((c) => c.startsWith("activeItem--")));
 }
 
-const getTabs = () =>
-  document.querySelector(`.sidebarWrapper section[class^="section--"]`);
+const getTabs = () => document.querySelector(`.sidebarWrapper section[class^="section--"]`);
 
 // Automatically set tab to unchecked.
 intercept("ROUTER_LOCATION_CHANGED", () => {
-  for (const tab of document.getElementsByClassName("__NEPTUNE_TAB"))
-    tab.style.color = "";
+  for (const tab of document.getElementsByClassName("__NEPTUNE_TAB")) tab.style.color = "";
 });
 
 /*
@@ -60,8 +56,8 @@ export default function registerTab(name, path, component = () => {}) {
         () => {
           addTab(getTabs());
         },
-        true
-      )
+        true,
+      ),
     );
   } else addTab(tabs);
 

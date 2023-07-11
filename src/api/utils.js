@@ -1,8 +1,4 @@
-import {
-  createStore as createIdbStore,
-  set as idbSet,
-  get as idbGet,
-} from "idb-keyval";
+import { createStore as createIdbStore, set as idbSet, get as idbGet } from "idb-keyval";
 import { store } from "voby";
 
 export function appendStyle(style) {
@@ -18,17 +14,12 @@ export function appendStyle(style) {
   };
 }
 
-const idbStore = createIdbStore(
-  "__NEPTUNE_IDB_STORAGE",
-  "__NEPTUNE_IDB_STORAGE"
-);
+const idbStore = createIdbStore("__NEPTUNE_IDB_STORAGE", "__NEPTUNE_IDB_STORAGE");
 
 export function createPersistentObject(id) {
   const persistentObject = store({});
 
-  idbGet(id, idbStore).then((obj) =>
-    store.reconcile(persistentObject, obj ?? {})
-  );
+  idbGet(id, idbStore).then((obj) => store.reconcile(persistentObject, obj ?? {}));
 
   store.on(persistentObject, () => {
     idbSet(id, store.unwrap(persistentObject), idbStore);

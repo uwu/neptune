@@ -1,6 +1,6 @@
-import { ReactiveRoot } from "../ui/components";
-import intercept from "./intercept";
-import { observe } from "./observe";
+import { ReactiveRoot } from "../ui/components.js";
+import intercept from "./intercept.js";
+import { observe } from "./observe.js";
 
 const pageNotFoundSelector = `[class^="contentArea--"] [class^="pageNotFoundError--"]`;
 

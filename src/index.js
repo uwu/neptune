@@ -1,6 +1,6 @@
-import "./ui/settings"
-import "./handleExfiltrations";
-import windowObject from "./windowObject";
+import "./ui/settings.js";
+import "./handleExfiltrations.js";
+import windowObject from "./windowObject.js";
 
 // Restore the console
 for (let key in console) {

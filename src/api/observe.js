@@ -9,8 +9,7 @@ const observer = new MutationObserver((records) => {
     changedElems.add(record.target);
 
     for (const e of record.removedNodes)
-      if (e instanceof HTMLElement || e instanceof SVGElement)
-        changedElems.add(e);
+      if (e instanceof HTMLElement || e instanceof SVGElement) changedElems.add(e);
   }
 
   for (const elem of changedElems)
@@ -20,10 +19,7 @@ const observer = new MutationObserver((records) => {
       elem
         .querySelectorAll(obs[0])
         .forEach(
-          (e) =>
-            !obs[2] &&
-            (e instanceof HTMLElement || e instanceof SVGElement) &&
-            obs[1](e)
+          (e) => !obs[2] && (e instanceof HTMLElement || e instanceof SVGElement) && obs[1](e),
         );
     }
 });
@@ -51,7 +47,7 @@ export function observe(sel, cb) {
     entry[2] = true;
     unobs();
   };
-  
+
   return unobs;
 }
 export function unobserve() {

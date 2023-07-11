@@ -1,12 +1,12 @@
-import * as voby from "voby"
+import * as voby from "voby";
 import * as patcher from "spitroast";
-import * as utils from "./api/utils";
-import * as plugins from "./api/plugins";
-import intercept from "./api/intercept";
-import { observe } from "./api/observe";
-import registerTab from "./api/registerTab";
-import registerRoute from "./api/registerRoute";
-import hookContextMenu from "./api/hookContextMenu";
+import * as utils from "./api/utils.js";
+import * as plugins from "./api/plugins.js";
+import intercept from "./api/intercept.js";
+import { observe } from "./api/observe.js";
+import registerTab from "./api/registerTab.js";
+import registerRoute from "./api/registerRoute.js";
+import hookContextMenu from "./api/hookContextMenu.js";
 
 export default {
   patcher,
@@ -17,5 +17,5 @@ export default {
   registerRoute,
   hookContextMenu,
   voby,
-  plugins
-}
+  plugins,
+};

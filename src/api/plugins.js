@@ -1,4 +1,5 @@
-import { createPersistentObject } from "./utils";
+import { store } from "voby";
+import { createPersistentObject } from "./utils.js";
 import quartz from "@uwu/quartz";
 import urlImport from "quartz-plugin-url-import";
 
@@ -35,7 +36,7 @@ export function disablePlugin(id) {
 }
 
 export function togglePlugin(id) {
-  pluginStore[id].enabled ? disablePlugin(id) : enablePlugin(id);
+  return pluginStore[id].enabled ? disablePlugin(id) : enablePlugin(id);
 }
 
 export async function enablePlugin(id) {
@@ -43,10 +44,12 @@ export async function enablePlugin(id) {
   await runPlugin(id, pluginStore[id].code);
 }
 
-async function runPlugin(id, pluginCode) {
+async function runPlugin(id, code) {
+  alert(1)
+
   try {
     // TODO: fix this quartz bug. no fucking clue what causes this shit.
-    const { onUnload } = await quartz(" " + pluginCode, quartzConfig);
+    const { onUnload } = await quartz(" " + code, quartzConfig);
 
     enabled[id] = { onUnload: onUnload ?? (() => {}) };
   } catch (e) {
@@ -56,16 +59,30 @@ async function runPlugin(id, pluginCode) {
   }
 }
 
-export async function installPlugin(id, pluginCode, manifest, enabled = true) {
+export async function installPlugin(id, code, manifest, enabled = true) {
   pluginStore[id] = {
-    pluginCode,
+    code,
     manifest,
     enabled,
   };
 
-  if (enabled) await runPlugin(id, pluginCode);
+  if (enabled) await runPlugin(id, code);
 }
 
 export function removePlugin(id) {
   delete pluginStore[id];
 }
+
+// The callback gets called once idb responds and the plugins are loaded into memory.
+const doneWaitingForIdb = store.on(pluginStore, () => {
+  doneWaitingForIdb();
+
+  // We don't attempt to load plugins if CSP exists because loading every plugin will fail and automatically disable the plugin.
+  if (document.querySelector(`[http-equiv="Content-Security-Policy"]`)) return;
+
+  for (const [id, plugin] of Object.entries(pluginStore)) {
+    // We do not currently account for plugin updates, but this will be handled once
+    // remote plugin installation is handled.
+    if (plugin.enabled) runPlugin(id, plugin.code);
+  }
+});

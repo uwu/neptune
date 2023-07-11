@@ -2,10 +2,7 @@ import { html, render, $ } from "voby";
 
 export function ReactiveRoot({ children }) {
   const root = html`<div style="display:contents" />`();
-  root.addEventListener(
-    "DOMNodeRemovedFromDocument",
-    render(html`${children}`, root)
-  );
+  root.addEventListener("DOMNodeRemovedFromDocument", render(html`${children}`, root));
 
   return root;
 }
@@ -20,11 +17,7 @@ export function Switch(props) {
 
   return html`
     <div>
-      <input
-        class="neptune-switch-checkbox"
-        type="checkbox"
-        checked=${checked}
-      />
+      <input class="neptune-switch-checkbox" type="checkbox" checked=${checked} />
       <span onClick=${props.onClick} class="neptune-switch"></span>
     </div>
   `;

@@ -1,19 +1,17 @@
-import intercept from "./intercept";
-import { observe } from "./observe";
+import intercept from "./intercept.js";
+import { observe } from "./observe.js";
 
 export default function hookContextMenu(menuType, name, handler) {
   return intercept("contextMenu/OPEN", ([payload]) => {
     // TODO: Change this to a switch statement.
-    
+
     if (payload?.type != menuType) return;
 
     const unob = observe(`[data-type="contextmenu-item"]`, (elem) => {
       unob.now();
 
       const contextMenuItem = elem.cloneNode(true);
-      const contextMenuLabel = contextMenuItem.querySelector(
-        `[class^="actionTextInner--"]`
-      );
+      const contextMenuLabel = contextMenuItem.querySelector(`[class^="actionTextInner--"]`);
       contextMenuLabel.innerText = name;
 
       const parentClasses = contextMenuLabel.parentElement.classList;
@@ -21,7 +19,7 @@ export default function hookContextMenu(menuType, name, handler) {
       contextMenuItem.innerHTML = "";
 
       const contextMenuWrapper = document.createElement("div");
-      contextMenuWrapper.setAttribute("tabindex", "0")
+      contextMenuWrapper.setAttribute("tabindex", "0");
       contextMenuWrapper.classList.add(...parentClasses);
       contextMenuWrapper.appendChild(contextMenuLabel);
 
@@ -29,7 +27,7 @@ export default function hookContextMenu(menuType, name, handler) {
         if (event.keyCode != 13) return;
 
         event.target.click();
-      })
+      });
 
       contextMenuItem.appendChild(contextMenuWrapper);
 

@@ -4,7 +4,8 @@
   "description": "A client modification for the Tidal music streaming app.",
   "main": "src/index.js",
   "scripts": {
-    "build": "rollup --config rollup.config.js"
+    "build": "rollup --config rollup.config.js",
+    "format": "prettier -wc ./src"
   },
   "keywords": [],
   "author": "",
@@ -21,6 +22,7 @@
   "devDependencies": {
     "@rollup/plugin-node-resolve": "^15.1.0",
     "@rollup/plugin-terser": "^0.4.3",
+    "prettier": "^3.0.0",
     "rollup": "^3.26.1"
   }
 }

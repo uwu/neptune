@@ -1,6 +1,6 @@
-import { Switch } from "./components";
-import registerRoute from "../api/registerRoute";
-import { pluginStore, togglePlugin } from "../api/plugins";
+import { Switch } from "./components.js";
+import registerRoute from "../api/registerRoute.js";
+import { pluginStore, togglePlugin } from "../api/plugins.js";
 import { $, html, For } from "voby";
 
 let selectedTab = $(0);
@@ -35,8 +35,7 @@ function PluginCard({ id, plugin }) {
           checked=${() => plugin.enabled}
           onClick=${() => {
             togglePlugin(id);
-          }}
-        />
+          }} />
       </div>
     </div>
   </div>`;
@@ -46,8 +45,7 @@ function TabButton({ className = "", onClick = () => {}, children }) {
   return html`<button
     onClick=${onClick}
     style="font-weight: 500; font-size: 1.14286rem; padding-bottom: 6px"
-    class="${className}"
-  >
+    class="${className}">
     ${children}
   </button>`;
 }
@@ -59,11 +57,9 @@ registerRoute(
       ${tabs.map(
         (tab, idx) =>
           html`<${TabButton} onClick=${() => selectedTab(idx)} className=${() =>
-            idx == selectedTab() ? "neptune-active-tab" : ""}>${
-            tab.name
-          }</${TabButton}>`
+            idx == selectedTab() ? "neptune-active-tab" : ""}>${tab.name}</${TabButton}>`,
       )}
     </div>
     <div>${() => tabs[selectedTab()].component}</div>
-  </div>`
+  </div>`,
 );

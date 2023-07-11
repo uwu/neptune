@@ -1,7 +1,7 @@
-import windowObject from "./windowObject";
+import windowObject from "./windowObject.js";
 import * as patcher from "spitroast";
-import { interceptors } from "./api/intercept";
-import loadStyles from "./styles";
+import { interceptors } from "./api/intercept.js";
+import loadStyles from "./styles.js";
 
 // abandon all hope, ye who enter here
 
@@ -25,10 +25,7 @@ windowObject.actions = actions;
 
 const getModulesFromWpRequire = (wpRequire) =>
   Object.fromEntries(
-    Object.entries(wpRequire.m).map(([k]) => [
-      k,
-      { id: k, loaded: true, exports: wpRequire(k) },
-    ])
+    Object.entries(wpRequire.m).map(([k]) => [k, { id: k, loaded: true, exports: wpRequire(k) }]),
   );
 
 Object.defineProperty(window, "webpackChunk_tidal_web", {
@@ -61,8 +58,7 @@ Object.defineProperty(window, "webpackChunk_tidal_web", {
 
                   if (!windowObject.hasOwnProperty("modules"))
                     Object.defineProperty(windowObject, "modules", {
-                      get: () =>
-                        Object.values(getModulesFromWpRequire(wpRequire)),
+                      get: () => Object.values(getModulesFromWpRequire(wpRequire)),
                     });
 
                   // See above: patching webpackRequire.
@@ -78,9 +74,7 @@ Object.defineProperty(window, "webpackChunk_tidal_web", {
                         if (!exfiltratedStore) {
                           // We sift through the modules to find a module that exports a function that gets the global Redux store.
                           const [key] = Object.entries(resp).find(([, e]) =>
-                            e
-                              ?.toString?.()
-                              .includes?.('Error("No global store set"')
+                            e?.toString?.().includes?.('Error("No global store set"'),
                           );
 
                           if (key) exfiltratedStore = true;
@@ -90,8 +84,7 @@ Object.defineProperty(window, "webpackChunk_tidal_web", {
                             so we wait for the getStore function to be called.
                           */
                           patcher.after(key, resp, (_, resp) => {
-                            if (!typeof resp == "object" && windowObject.store)
-                              return;
+                            if (!typeof resp == "object" && windowObject.store) return;
 
                             windowObject.store = resp;
                           });
@@ -101,13 +94,10 @@ Object.defineProperty(window, "webpackChunk_tidal_web", {
                       try {
                         if (patchedPrepareAction) return;
 
-                        let found = Object.entries(resp).find(
-                          ([, possiblyPrepareAction]) =>
-                            possiblyPrepareAction
-                              ?.toString?.()
-                              ?.includes?.(
-                                `new Error("prepareAction did not return an object");`
-                              )
+                        let found = Object.entries(resp).find(([, possiblyPrepareAction]) =>
+                          possiblyPrepareAction
+                            ?.toString?.()
+                            ?.includes?.(`new Error("prepareAction did not return an object");`),
                         );
 
                         if (!found) return;
@@ -120,20 +110,14 @@ Object.defineProperty(window, "webpackChunk_tidal_web", {
                             .split("/")
                             .map((n) =>
                               n.toUpperCase() == n
-                                ? n
-                                    .toLowerCase()
-                                    .replace(/_([a-z])/g, (_, i) =>
-                                      i.toUpperCase()
-                                    )
-                                : n
+                                ? n.toLowerCase().replace(/_([a-z])/g, (_, i) => i.toUpperCase())
+                                : n,
                             );
 
                           const builtAction = (...args) => {
                             const act = resp(...args);
 
-                            if (
-                              !(act.__proto__.toString() == "[object Promise]")
-                            )
+                            if (!(act.__proto__.toString() == "[object Promise]"))
                               return windowObject.store.dispatch(act);
 
                             return new Promise(async (res, rej) => {
@@ -161,17 +145,13 @@ Object.defineProperty(window, "webpackChunk_tidal_web", {
                                 try {
                                   const resp = interceptor(args);
 
-                                  if (typeof resp == "boolean")
-                                    shouldDispatch = !shouldDispatch;
+                                  if (typeof resp == "boolean") shouldDispatch = !shouldDispatch;
                                 } catch (e) {
-                                  console.error(
-                                    "Failed to run interceptor!\n",
-                                    e
-                                  );
+                                  console.error("Failed to run interceptor!\n", e);
                                 }
                               }
 
-                              return shouldDispatch ? orig.apply(ctxt, args) : { type: "NOOP"} ;
+                              return shouldDispatch ? orig.apply(ctxt, args) : { type: "NOOP" };
                             },
                           });
                         });

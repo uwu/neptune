@@ -1,4 +1,4 @@
-import { appendStyle } from "./api/utils";
+import { appendStyle } from "./api/utils.js";
 
 export default function loadStyles() {
   appendStyle(`
