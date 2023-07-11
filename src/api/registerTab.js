@@ -1,6 +1,5 @@
 import registerRoute from "./registerRoute";
 import intercept from "./intercept";
-import { observe } from "./observe";
 
 function makeInactive(tab) {
   tab.classList.remove(
@@ -41,10 +40,10 @@ export default function registerTab(name, path, component = () => {}) {
       });
     });
 
-    const removeRouteHandler = registerRoute(path, (page) => {
+    const removeRouteHandler = registerRoute(path, () => {
       tab.style.color = "var(--wave-color-solid-accent-fill)";
 
-      component(page);
+      return component;
     });
 
     tabs.appendChild(tab);

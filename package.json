@@ -4,17 +4,23 @@
   "description": "A client modification for the Tidal music streaming app.",
   "main": "src/index.js",
   "scripts": {
-    "build": "node build.mjs"
+    "build": "rollup --config rollup.config.js"
   },
   "keywords": [],
   "author": "",
   "license": "ISC",
-  "devDependencies": {
-    "esbuild": "^0.18.6"
-  },
   "dependencies": {
-    "@arrow-js/core": "1.0.0-alpha.9",
     "@cumjar/websmack": "^1.2.0",
-    "spitroast": "^1.4.3"
+    "@uwu/quartz": "^1.1.6",
+    "idb-keyval": "^6.2.1",
+    "quartz-plugin-url-import": "^1.0.1",
+    "spitroast": "^1.4.3",
+    "voby": "^0.54.0"
+  },
+  "type": "module",
+  "devDependencies": {
+    "@rollup/plugin-node-resolve": "^15.1.0",
+    "@rollup/plugin-terser": "^0.4.3",
+    "rollup": "^3.26.1"
   }
 }

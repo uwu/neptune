@@ -1,6 +1,7 @@
 import windowObject from "./windowObject";
 import * as patcher from "spitroast";
 import { interceptors } from "./api/intercept";
+import loadStyles from "./styles";
 
 // abandon all hope, ye who enter here
 
@@ -34,6 +35,7 @@ Object.defineProperty(window, "webpackChunk_tidal_web", {
   get: () => webpackObject,
   set(val) {
     if (webpackObject) return true;
+    loadStyles();
 
     /*
       We replace webpackObject with a proxy that waits for .push to be gotten.

@@ -1,3 +1,4 @@
+import "./ui/settings"
 import "./handleExfiltrations";
 import windowObject from "./windowObject";
 

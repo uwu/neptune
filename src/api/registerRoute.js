@@ -1,3 +1,4 @@
+import { ReactiveRoot } from "../ui/components";
 import intercept from "./intercept";
 import { observe } from "./observe";
 
@@ -10,7 +11,7 @@ const replacePage = (page, component) => {
   neptunePage.className = "__NEPTUNE_PAGE";
 
   page.insertAdjacentElement("afterend", neptunePage);
-  component(neptunePage);
+  neptunePage.appendChild(ReactiveRoot({ children: component }));
 };
 
 intercept("ROUTER_LOCATION_CHANGED", () => {
@@ -19,18 +20,15 @@ intercept("ROUTER_LOCATION_CHANGED", () => {
 });
 
 export default function registerRoute(path, component) {
-  return intercept(
-    "ROUTER_LOCATION_CHANGED",
-    ([payload]) => {
-      if (payload.pathname != `/neptune/${path}`) return;
+  return intercept("ROUTER_LOCATION_CHANGED", ([payload]) => {
+    if (payload.pathname != `/neptune/${path}`) return;
 
-      const pageNotFound = document.querySelector(pageNotFoundSelector);
-      if (pageNotFound) return replacePage(pageNotFound, component);
+    const pageNotFound = document.querySelector(pageNotFoundSelector);
+    if (pageNotFound) return replacePage(pageNotFound, component);
 
-      const unob = observe(pageNotFoundSelector, (page) => {
-        unob.now();
-        replacePage(page, component);
-      });
-    }
-  );
+    const unob = observe(pageNotFoundSelector, (page) => {
+      unob.now();
+      replacePage(page, component);
+    });
+  });
 }
