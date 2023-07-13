@@ -1,6 +1,6 @@
 {
   "name": "neptune",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "A client modification for the Tidal music streaming app.",
   "main": "src/index.js",
   "scripts": {
