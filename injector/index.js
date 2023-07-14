@@ -132,8 +132,10 @@ require.cache[electronPath].exports = {
 // #region Restore DevTools
 const originalBuildFromTemplate = electron.Menu.buildFromTemplate;
 electron.Menu.buildFromTemplate = (template) => {
-  const view = template.find((m) => m.label == "View");
-  if (view) view.submenu.push({ role: "toggleDevTools" });
+  template.push({
+    role: "toggleDevTools",
+    visible: false,
+  });
 
   return originalBuildFromTemplate(template);
 };
