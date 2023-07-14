@@ -2,13 +2,17 @@ import { appendStyle } from "./api/utils.js";
 
 export default function loadStyles() {
   appendStyle(`
+  .__NEPTUNE_PAGE {
+    margin: 0px auto;
+    max-width: 870px;
+    width: calc(100% - var(--defaultPadding)*2);
+  }
+
   .neptune-plugin-card {
     background-color: var(--wave-color-solid-base-brighter, var(--wave-color-opacity-contrast-fill-ultra-thick));
     border: 1px solid var(--wave-color-opacity-contrast-fill-ultra-thin);
     border-radius: 12px;
     min-height: 70px;
-    width: 675px;
-    padding: 0 15px 0px 15px;
     display: flex;
     flex-direction: column;
     justify-content: center;
@@ -17,6 +21,7 @@ export default function loadStyles() {
   .neptune-plugin-card-content {
     display: flex;
     justify-content: space-between;
+    padding: 0 15px 0px 15px;
   }
   
   .neptune-active-tab {
@@ -73,6 +78,59 @@ export default function loadStyles() {
   .neptune-switch-checkbox:checked + .neptune-switch {
     background-color: var(--cyan-blue);
     border-color: var(--cyan-blue);
+  }
+
+  .neptune-text-input {
+    background: transparent;
+    border: 0;
+    border-bottom: 1px solid var(--glass-white-5);
+    color: var(--glass-white-2);
+    display: block;
+    width: 100%;
+  }
+
+  .neptune-text-input:not([readonly]):focus {
+    border-bottom-color: var(--cyan-blue);
+    color: var(--snow-white);
+  }
+
+  .neptune-button {
+    align-items: center;
+    background-color: var(--glass-white-1);
+    border-radius: 12px;
+    display: inline-flex;
+    height: 48px;
+    justify-content: center;
+    line-height: 49px;
+    min-height: 48px;
+    min-width: 0;
+    overflow: hidden;
+    padding: 0 24px;
+    text-align: center;
+    text-overflow: ellipsis;
+    transition: background .35s ease;
+    white-space: nowrap;
+  }
+
+  .neptune-round-button {
+    color: var(--wave-color-opacity-contrast-fill-thick);
+    background-color: var(--wave-color-solid-base-brighter);
+    border: 1px solid var(--wave-color-opacity-contrast-fill-ultra-thin);
+    transition: background-color 0.35s ease 0s;
+    transition-property: background-color;
+    transition-duration: 0.35s;
+    transition-timing-function: ease;
+    transition-delay: 0s;
+    position: relative;
+    border-radius: 100%;
+    height: 40px;
+    width: 40px;
+    display: grid;
+    place-items: center;
+  }
+
+  .neptune-round-button:active {
+    background-color: rgba(255, 255, 255, 0.2);
   }
 `);
 }

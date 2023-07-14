@@ -1,6 +1,6 @@
 import registerRoute from "./registerRoute.js";
 import intercept from "./intercept.js";
-
+import { actions } from "../handleExfiltrations.js";
 function makeInactive(tab) {
   tab.classList.remove(Array.from(tab.classList).find((c) => c.startsWith("activeItem--")));
 }
@@ -30,7 +30,7 @@ export default function registerTab(name, path, component = () => {}) {
     tab.addEventListener("click", (e) => {
       e.preventDefault();
 
-      neptune.actions.router.push({
+      actions.router.push({
         pathname: `/neptune/${path}`,
         replace: true,
       });

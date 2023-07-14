@@ -1,4 +1,4 @@
-import { html, render, $ } from "voby";
+import { html, render, $, isObservable } from "voby";
 
 export function ReactiveRoot({ children }) {
   const root = html`<div style="display:contents" />`();
@@ -8,7 +8,7 @@ export function ReactiveRoot({ children }) {
 }
 
 export function Switch(props) {
-  const checked = props.checked ?? false;
+  let checked = props.checked ?? false;
 
   if (!props.onClick) {
     checked = $(!!checked);
@@ -21,4 +21,25 @@ export function Switch(props) {
       <span onClick=${props.onClick} class="neptune-switch"></span>
     </div>
   `;
+}
+
+export function TextInput({ placeholder = "", type = "text", value = "", onEnter = () => {} }) {
+  if (!isObservable(value)) value = $(value);
+
+  return html`
+    <input
+      class="neptune-text-input"
+      value=${value}
+      onKeyup=${(e) => {
+        if (e.key != "Enter") return;
+        onEnter(e);
+      }}
+      onInput=${(e) => value(e.target.value)}
+      placeholder=${placeholder}
+      type=${type} />
+  `;
+}
+
+export function Button({ onClick = () => {}, children }) {
+  return html` <button class="neptune-button" onClick=${onClick}>${children}</button> `;
 }
