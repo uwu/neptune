@@ -1,8 +1,51 @@
 import { Switch, TextInput } from "./components.js";
 import registerRoute from "../api/registerRoute.js";
-import { pluginStore, togglePlugin, removePlugin, installPluginFromURL } from "../api/plugins.js";
+import {
+  pluginStore,
+  togglePlugin,
+  removePlugin,
+  installPluginFromURL,
+  installPlugin,
+} from "../api/plugins.js";
 import { $, html, For } from "voby";
 import hookContextMenu from "../api/hookContextMenu.js";
+import { actions } from "../handleExfiltrations.js";
+
+const parseManifest = (manifest) =>
+  JSON.parse(manifest.slice(manifest.indexOf("/*") + 2, manifest.indexOf("*/")));
+
+async function importLocalPlugin() {
+  const [fileHandle] = await showOpenFilePicker({
+    types: [{ description: "A neptune plugin file", accept: { "text/javascript": [".js"] } }],
+  });
+
+  const file = await fileHandle.getFile();
+  const content = await file.text();
+
+  let manifest;
+  try {
+    manifest = parseManifest(content);
+
+    if (!["name", "author", "description"].every((m) => typeof manifest[m] === "string"))
+      throw "invalid manifest";
+  } catch {
+    return actions.message.messageError({ message: "Invalid plugin manifest!" });
+  }
+
+  try {
+  await installPlugin(
+    manifest.name + "-" + (Math.random() + 1).toString(36).substring(7),
+    content,
+    {
+      name: manifest.name,
+      author: manifest.author,
+      description: manifest.description,
+    },
+  );
+  } catch {
+    actions.message.messageError({ message: "Failed to install plugin!" });
+  }
+}
 
 let selectedTab = $(0);
 const tabs = [
@@ -20,7 +63,7 @@ const tabs = [
             pluginToImport("");
           }} placeholder="https://example.com" />
           <!-- This button will be used for importing from local files. -->
-          <button class="neptune-round-button">
+          <button onClick=${importLocalPlugin} class="neptune-round-button">
             <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="17 8 12 3 7 8"></polyline><line x1="12" y1="3" x2="12" y2="15"></line></svg>
           </button>
         </div>
@@ -103,4 +146,6 @@ registerRoute(
   </div>`,
 );
 
-hookContextMenu("USER_PROFILE", "neptune settings", () => neptune.actions.router.push({ pathname: "/neptune/settings", replace: true }))
+hookContextMenu("USER_PROFILE", "neptune settings", () =>
+  neptune.actions.router.push({ pathname: "/neptune/settings", replace: true }),
+);
