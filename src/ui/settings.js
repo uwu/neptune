@@ -15,8 +15,8 @@ const tabs = [
         <div style="padding-top: 10px; display: flex; gap:10px">
           <!-- This text input *needs* to be able to have an onEnter event. -->
           <${TextInput} value=${pluginToImport} onEnter=${() => {
+            installPluginFromURL(pluginToImport());
             pluginToImport("");
-            installPluginFromURL(pluginToImport);
           }} placeholder="https://example.com" />
           <!-- This button will be used for importing from local files. -->
           <button class="neptune-round-button">

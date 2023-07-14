@@ -73,7 +73,7 @@ export function removePlugin(id) {
 }
 
 // This handles caching too!
-async function fetchPluginFromURL(url) {
+export async function fetchPluginFromURL(url) {
   let parsedURL = url;
 
   if (!parsedURL.endsWith("/")) parsedURL += "/";
@@ -98,7 +98,8 @@ async function fetchPluginFromURL(url) {
 }
 
 export async function installPluginFromURL(url, enabled = true) {
-  if (pluginStore[url]) return actions.message.messageError({ message: "Plugin is already imported!" });
+  if (pluginStore[url])
+    return actions.message.messageError({ message: "Plugin is already imported!" });
 
   try {
     const [code, manifest] = await fetchPluginFromURL(url);
@@ -131,7 +132,7 @@ const doneWaitingForIdb = store.on(pluginStore, async () => {
         pluginId[manifest] = manifest;
         pluginId[id].code = code;
       } catch {
-        console.log("[neptune] failed to update plugin")
+        console.log("[neptune] failed to update plugin");
       }
     }
 
