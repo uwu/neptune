@@ -2,6 +2,7 @@ import { Switch, TextInput } from "./components.js";
 import registerRoute from "../api/registerRoute.js";
 import { pluginStore, togglePlugin, removePlugin, installPluginFromURL } from "../api/plugins.js";
 import { $, html, For } from "voby";
+import hookContextMenu from "../api/hookContextMenu.js";
 
 let selectedTab = $(0);
 const tabs = [
@@ -101,3 +102,5 @@ registerRoute(
     </div>
   </div>`,
 );
+
+hookContextMenu("USER_PROFILE", "neptune settings", () => neptune.actions.router.push({ pathname: "/neptune/settings", replace: true }))
