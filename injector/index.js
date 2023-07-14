@@ -72,6 +72,88 @@ electron.app.whenReady().then(() => {
 });
 // #endregion
 
+// #region CSP removal
+async function attachDebugger(dbg) {
+  dbg.attach();
+  dbg.on("message", async (_, method, params, sessionId) => {
+    if (sessionId === "") sessionId = undefined;
+    if (method === "Fetch.requestPaused") {
+      console.log(params.request.url)
+      const res = await dbg.sendCommand("Fetch.getResponseBody", {
+        requestId: params.requestId,
+      }, sessionId);
+
+      let body = res.base64Encoded ? atob(res.body) : res.body;
+      body = body.replace(/<meta http-equiv="Content-Security-Policy" content=".*?">/, "<!-- neptune removed csp -->");
+
+      // Add header to identify patched request in cache
+      params.responseHeaders.push({
+        name: "x-neptune",
+        value: "patched",
+      });
+
+      dbg.sendCommand("Fetch.fulfillRequest", {
+        requestId: params.requestId,
+        responseCode: 200,
+        responseHeaders: params.responseHeaders,
+        body: btoa(body),
+      }, sessionId);
+    } else if (method === "Target.attachedToTarget") {
+      const { sessionId } = params;
+
+      dbg.sendCommand("Fetch.enable", {
+        patterns: [{
+          urlPattern: "https://desktop.tidal.com/",
+          requestStage: "Response",
+        }, {
+          urlPattern: "https://desktop.tidal.com/index.html", // Workbox rewrites the URL to include index.html during initial cache build
+          requestStage: "Response",
+        }],
+      }, sessionId);
+    }
+  });
+
+  dbg.sendCommand("Target.setAutoAttach", {
+    autoAttach: true,
+    waitForDebuggerOnStart: false,
+    flatten: true,
+    filter: [
+      { type: "service_worker" },
+    ],
+  });
+
+  // Enable interception on page itself if service worker hasn't been registered yet.
+  dbg.sendCommand("Fetch.enable", {
+    patterns: [{
+      urlPattern: "https://desktop.tidal.com/",
+      requestStage: "Response",
+    }],
+  });
+
+  // Delete unpatched index cache entry if it exists
+  const { caches } = await dbg.sendCommand("CacheStorage.requestCacheNames", {
+    securityOrigin: "https://desktop.tidal.com",
+  });
+  if (caches.length !== 1) return;
+  const { cacheId } = caches[0];
+
+  const { cacheDataEntries, returnCount } = await dbg.sendCommand("CacheStorage.requestEntries", {
+    cacheId,
+    pathFilter: "/index.html",
+  });
+  if (returnCount !== 1) return;
+  const entry = cacheDataEntries[0];
+
+  if (!entry.responseHeaders.some((h) => h.name === "x-neptune")) {
+    await dbg.sendCommand("CacheStorage.deleteEntry", {
+      cacheId,
+      request: entry.requestURL,
+    });
+    // TODO: Make the service worker rebuild the cache entry, otherwise offline mode will not work
+  }
+}
+// #endregion
+
 // #region BrowserWindow
 const ProxiedBrowserWindow = new Proxy(electron.BrowserWindow, {
   construct(target, args) {
@@ -88,35 +170,9 @@ const ProxiedBrowserWindow = new Proxy(electron.BrowserWindow, {
     const window = new target(options);
     if (options.title != "TIDAL") return;
 
-    window.webContents.once("did-finish-load", () => {
-      electron.protocol.interceptBufferProtocol("https", ({ url }, cb) => {
-        if (url == "https://desktop.tidal.com/") electron.protocol.uninterceptProtocol("https");
-  
-        https.get(url, (res) => {
-          const data = [];
-          res.on("data", (chunk) => data.push(chunk));
-          res.on("end", () => {
-            const buffer = Buffer.concat(data);
-            const str = buffer.toString("utf8");
-  
-            cb(
-              Buffer.from(
-                str.replace(
-                  `<meta http-equiv="Content-Security-Policy"`,
-                  "<meta"
-                ),
-                "utf8"
-              )
-            );
-          });
-        });
-      });
-
-      window.webContents.reloadIgnoringCache()
-    })
-    
-
     window.webContents.originalPreload = originalPreload;
+
+    attachDebugger(window.webContents.debugger);
     return window;
   },
 });
