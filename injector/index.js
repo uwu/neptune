@@ -44,7 +44,7 @@ if (!localBundle)
     req.end();
   });
 
-const getShelterBundle = () =>
+const getNeptuneBundle = () =>
   !localBundle
     ? fetchPromise
     : Promise.resolve(
@@ -61,11 +61,11 @@ electron.ipcMain.on("NEPTUNE_ORIGINAL_PRELOAD", (event) => {
   event.returnValue = event.sender.originalPreload;
 });
 
-electron.ipcMain.handle("NEPTUNE_BUNDLE_FETCH", getShelterBundle);
+electron.ipcMain.handle("NEPTUNE_BUNDLE_FETCH", getNeptuneBundle);
 // #endregion
 
 // #region Redux Devtools
-electron.app.on("ready", () => {
+electron.app.whenReady().then(() => {
   electron.session.defaultSession.loadExtension(
     path.join(process.resourcesPath, "app", "redux-devtools")
   );
