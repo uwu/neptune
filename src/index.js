@@ -29,4 +29,7 @@ Object.defineProperty = function (...args) {
 
 Object.freeze = (arg) => arg;
 
+// If the app fails to load for any reason we simply reload the page.
+setTimeout(() => !document.getElementById("skeleton-logged-out") ?? window.location.reload(), 3000)
+
 window.neptune = windowObject;
