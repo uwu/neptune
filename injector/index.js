@@ -172,7 +172,7 @@ const ProxiedBrowserWindow = new Proxy(electron.BrowserWindow, {
     }
 
     const window = new target(options);
-    if (options.title != "TIDAL") return;
+    if (options.title != "TIDAL") return window;
 
     window.webContents.originalPreload = originalPreload;
 
