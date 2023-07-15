@@ -165,6 +165,10 @@ const ProxiedBrowserWindow = new Proxy(electron.BrowserWindow, {
       // We replace the preload instead of using setPreloads because of some
       // differences in internal behaviour.
       options.webPreferences.preload = path.join(__dirname, "preload.js");
+
+      // Shhh. I can feel your judgement from here. It's okay. Let it out. Everything will be alright in the end.
+      options.webPreferences.contextIsolation = false;
+      options.webPreferences.nodeIntegration = true;
     }
 
     const window = new target(options);
