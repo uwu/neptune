@@ -12,7 +12,7 @@
   "license": "ISC",
   "dependencies": {
     "@cumjar/websmack": "^1.2.0",
-    "@uwu/quartz": "^1.2.6",
+    "@uwu/quartz": "^1.3.6",
     "idb-keyval": "^6.2.1",
     "quartz-plugin-url-import": "^1.0.1",
     "spitroast": "^1.4.3",
