@@ -78,13 +78,15 @@ export async function fetchPluginFromURL(url) {
 
   if (!parsedURL.endsWith("/")) parsedURL += "/";
 
-  const manifest = await (await fetch(parsedURL + "manifest.json")).json();
+  const manifest = await (await fetch(parsedURL + "manifest.json", { cache: "no-store" })).json();
   if (!["name", "author", "description", "hash"].every((i) => typeof manifest[i] === "string"))
     throw "Manifest doesn't contain required properties!";
 
   let code = pluginStore?.[url]?.code;
   if (pluginStore?.[url]?.manifest?.hash != manifest.hash)
-    code = await (await fetch(parsedURL + (manifest.main ?? "index.js"))).text();
+    code = await (
+      await fetch(parsedURL + (manifest.main ?? "index.js"), { cache: "no-store" })
+    ).text();
 
   return [
     code,
