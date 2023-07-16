@@ -9,8 +9,8 @@ dependencies:
     specifier: ^1.2.0
     version: 1.2.0
   '@uwu/quartz':
-    specifier: ^1.3.6
-    version: 1.3.6
+    specifier: ^1.3.7
+    version: 1.3.7
   idb-keyval:
     specifier: ^6.2.1
     version: 6.2.1
@@ -141,8 +141,8 @@ packages:
     resolution: {integrity: sha512-60BCwRFOZCQhDncwQdxxeOEEkbc5dIMccYLwbxsS4TUNeVECQ/pBJ0j09mrHOl/JJvpRPGwO9SvE4nR2Nb/a4Q==}
     dev: true
 
-  /@uwu/quartz@1.3.6:
-    resolution: {integrity: sha512-GNo4Pr5GRKWaPP5ykmqVUpAznn0HulsHjyGTat8Bct0lv9O49o6NOKORcsVzu/WgKyWB/+5KYFiifqzmxKSOHA==}
+  /@uwu/quartz@1.3.7:
+    resolution: {integrity: sha512-ZW5Kv9/HxhX3g3uGFRBp8r3SYyh0E3ChAo6Y96mputVfN5ajjxb2nRyzwMzNEhns8x68A+ZL0bVIcdmDE5SMvA==}
     dependencies:
       es-module-lexer: 1.3.0
     dev: false
