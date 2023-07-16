@@ -47,8 +47,7 @@ export async function enablePlugin(id) {
 
 async function runPlugin(id, code) {
   try {
-    // TODO: fix this quartz bug. no fucking clue what causes this shit.
-    const { onUnload } = await quartz(" " + code, quartzConfig);
+    const { onUnload } = await quartz(code, quartzConfig);
 
     enabled[id] = { onUnload: onUnload ?? (() => {}) };
   } catch (e) {
