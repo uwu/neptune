@@ -44,7 +44,7 @@ async function runPlugin(plugin) {
     const pluginData = {
       id: plugin.id,
       manifest: plugin.manifest,
-      persist: persistentStorage,
+      storage: persistentStorage,
     };
 
     const { onUnload, Settings } = await quartz(plugin.code, {
