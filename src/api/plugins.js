@@ -1,5 +1,5 @@
-import { store } from "voby";
-import { createPersistentObject } from "./utils.js";
+import { createPersistentObject, neptuneIdbStore } from "./utils.js";
+import { del } from "idb-keyval";
 import quartz from "@uwu/quartz";
 import urlImport from "quartz-plugin-url-import";
 import { actions } from "../handleExfiltrations.js";
@@ -88,8 +88,9 @@ export async function installPlugin(id, code, manifest, enabled = true) {
   if (enabled) await runPlugin(id, code);
 }
 
-export function removePlugin(id) {
+export async function removePlugin(id) {
   delete pluginStore[id];
+  await del("_PERSISTENT_STORAGE", neptuneIdbStore)
 }
 
 // This handles caching too!

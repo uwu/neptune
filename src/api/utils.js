@@ -14,19 +14,19 @@ export function appendStyle(style) {
   };
 }
 
-const idbStore = createIdbStore("__NEPTUNE_IDB_STORAGE", "__NEPTUNE_IDB_STORAGE");
+export const neptuneIdbStore = createIdbStore("__NEPTUNE_IDB_STORAGE", "__NEPTUNE_IDB_STORAGE");
 
 export function createPersistentObject(id) {
   const persistentObject = store({});
 
   store.on(persistentObject, () => {
-    idbSet(id, store.unwrap(persistentObject), idbStore);
+    idbSet(id, store.unwrap(persistentObject), neptuneIdbStore);
   });
 
   return [
     persistentObject,
     new Promise((res) =>
-      idbGet(id, idbStore).then((obj) => {
+      idbGet(id, neptuneIdbStore).then((obj) => {
         store.reconcile(persistentObject, obj ?? {});
         res()
       }),
