@@ -16,19 +16,20 @@ export function appendStyle(style) {
 
 export const neptuneIdbStore = createIdbStore("__NEPTUNE_IDB_STORAGE", "__NEPTUNE_IDB_STORAGE");
 
-export function createPersistentObject(id) {
-  const persistentObject = store({});
+export function createPersistentObject(id, isArray = false) {
+  // This is fucking moronic. But fine, we'll do this dumb shit just for you.
+  const persistentObject = store(isArray ? { value: [] } : {});
 
   store.on(persistentObject, () => {
     idbSet(id, store.unwrap(persistentObject), neptuneIdbStore);
   });
 
   return [
-    persistentObject,
+    isArray ? persistentObject.value : persistentObject,
     new Promise((res) =>
       idbGet(id, neptuneIdbStore).then((obj) => {
-        store.reconcile(persistentObject, obj ?? {});
-        res()
+        store.reconcile(persistentObject, obj ?? (isArray ? { value: [] } : {}));
+        res();
       }),
     ),
   ];

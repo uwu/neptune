@@ -5,11 +5,13 @@ import quartz from "@uwu/quartz";
 import urlImport from "quartz-plugin-url-import";
 import { actions } from "../handleExfiltrations.js";
 
-export const [pluginStore, pluginStoreReady] = createPersistentObject("NEPTUNE_PLUGINS");
+export const [pluginStore, pluginStoreReady] = createPersistentObject("NEW_NEPTUNE_PLUGINS", true);
 export const enabled = store({});
 
+export const getPluginById = (id) => pluginStore.find((p) => p.id == id);
+
 export function disablePlugin(id) {
-  pluginStore[id].enabled = false;
+  getPluginById(id).enabled = false;
 
   try {
     enabled[id]?.onUnload?.();
@@ -21,29 +23,31 @@ export function disablePlugin(id) {
 }
 
 export function togglePlugin(id) {
-  return pluginStore[id].enabled ? disablePlugin(id) : enablePlugin(id);
+  return getPluginById(id).enabled ? disablePlugin(id) : enablePlugin(id);
 }
 
 export async function enablePlugin(id) {
-  pluginStore[id].enabled = true;
-  await runPlugin(id, pluginStore[id].code);
+  const plugin = getPluginById(id);
+  plugin.enabled = true;
+
+  await runPlugin(plugin);
 }
 
-async function runPlugin(id, code) {
+async function runPlugin(plugin) {
   try {
     const [persistentStorage, persistentStorageReady] = createPersistentObject(
-      id + "_PERSISTENT_STORAGE",
+      plugin.id + "_PERSISTENT_STORAGE",
     );
 
     await persistentStorageReady;
 
     const pluginData = {
-      manifest: pluginStore[id].manifest,
+      id: plugin.id,
+      manifest: plugin.manifest,
       persist: persistentStorage,
-      id,
     };
 
-    const { onUnload, Settings } = await quartz(code, {
+    const { onUnload, Settings } = await quartz(plugin.code, {
       plugins: [
         {
           resolve({ name }) {
@@ -73,28 +77,35 @@ async function runPlugin(id, code) {
       ],
     });
 
-    enabled[id] = { onUnload: onUnload ?? (() => {}) };
-    if (Settings) enabled[id].Settings = Settings;
+    enabled[plugin.id] = { onUnload: onUnload ?? (() => {}) };
+    if (Settings) enabled[plugin.id].Settings = Settings;
   } catch (e) {
-    await disablePlugin(id);
+    await disablePlugin(plugin.id);
 
     console.error("Failed to load neptune plugin!\n", e);
   }
 }
 
 export async function installPlugin(id, code, manifest, enabled = true) {
-  pluginStore[id] = {
+  const plugin = {
+    id,
     code,
     manifest,
     enabled,
   };
 
-  if (enabled) await runPlugin(id, code);
+  pluginStore.unshift(plugin);
+
+  if (enabled) await runPlugin(plugin);
 }
 
 export async function removePlugin(id) {
-  delete pluginStore[id];
-  await del("_PERSISTENT_STORAGE", neptuneIdbStore);
+  pluginStore.splice(
+    pluginStore.findIndex((p) => p.id == id),
+    1,
+  );
+
+  await del(id + "_PERSISTENT_STORAGE", neptuneIdbStore);
 }
 
 // This handles caching too!
@@ -107,8 +118,10 @@ export async function fetchPluginFromURL(url) {
   if (!["name", "author", "description", "hash"].every((i) => typeof manifest[i] === "string"))
     throw "Manifest doesn't contain required properties!";
 
-  let code = pluginStore?.[url]?.code;
-  if (pluginStore?.[url]?.manifest?.hash != manifest.hash)
+  const plugin = getPluginById(url);
+  let code = plugin?.code;
+
+  if (plugin?.manifest?.hash != manifest.hash)
     code = await (
       await fetch(parsedURL + (manifest.main ?? "index.js"), { cache: "no-store" })
     ).text();
@@ -125,20 +138,23 @@ export async function fetchPluginFromURL(url) {
 }
 
 export async function installPluginFromURL(url, enabled = true) {
-  if (pluginStore[url])
+  if (getPluginById(url))
     return actions.message.messageError({ message: "Plugin is already imported!" });
 
   try {
     const [code, manifest] = await fetchPluginFromURL(url);
 
-    pluginStore[url] = {
+    const plugin = {
+      id: url,
       code,
       manifest,
       enabled,
       update: true,
-    };
+    }
 
-    if (enabled) runPlugin(url, code);
+    pluginStore.unshift(plugin);
+
+    if (enabled) runPlugin(plugin);
   } catch {
     actions.message.messageError({ message: "Failed to import neptune plugin!" });
   }
@@ -149,13 +165,13 @@ pluginStoreReady.then(async () => {
   // We don't attempt to load plugins if CSP exists because loading every plugin will fail and automatically disable the plugin.
   if (document.querySelector(`[http-equiv="Content-Security-Policy"]`)) return;
 
-  for (const [id, plugin] of Object.entries(pluginStore)) {
+  for (const plugin of pluginStore) {
     if (plugin.update) {
       try {
-        const [code, manifest] = await fetchPluginFromURL(id);
+        const [code, manifest] = await fetchPluginFromURL(plugin.id);
 
-        pluginId[manifest] = manifest;
-        pluginId[id].code = code;
+        plugin.manifest = manifest;
+        plugin.code = code;
       } catch {
         console.log("[neptune] failed to update plugin");
       }
@@ -163,6 +179,6 @@ pluginStoreReady.then(async () => {
 
     // We do not currently account for plugin updates, but this will be handled once
     // remote plugin installation is handled.
-    if (plugin.enabled) runPlugin(id, plugin.code);
+    if (plugin.enabled) runPlugin(plugin);
   }
 });
