@@ -4,25 +4,8 @@ import quartz from "@uwu/quartz";
 import urlImport from "quartz-plugin-url-import";
 import { actions } from "../handleExfiltrations.js";
 
-export const pluginStore = createPersistentObject("NEPTUNE_PLUGINS");
+export const [pluginStore, pluginStoreReady] = createPersistentObject("NEPTUNE_PLUGINS");
 export const enabled = {};
-
-const quartzConfig = {
-  plugins: [
-    {
-      resolve({ name }) {
-        if (!name.startsWith("@neptune")) return;
-
-        return `window${name
-          .slice(1)
-          .split("/")
-          .map((i) => `[${JSON.stringify(i)}]`)
-          .join("")}`;
-      },
-    },
-    urlImport(),
-  ],
-};
 
 export function disablePlugin(id) {
   pluginStore[id].enabled = false;
@@ -47,7 +30,44 @@ export async function enablePlugin(id) {
 
 async function runPlugin(id, code) {
   try {
-    const { onUnload } = await quartz(code, quartzConfig);
+    const [persistentStorage, persistentStorageReady] = createPersistentObject(id + "_PERSISTENT_STORAGE");
+
+    await persistentStorageReady;
+    
+    const pluginData = {
+      manifest: pluginStore[id].manifest,
+      persist: persistentStorage,
+    };
+
+    const { onUnload } = await quartz(code, {
+      plugins: [
+        {
+          resolve({ name }) {
+            if (!name.startsWith("@neptune")) return;
+
+            return `window${name
+              .slice(1)
+              .split("/")
+              .map((i) => `[${JSON.stringify(i)}]`)
+              .join("")}`;
+          },
+        },
+        {
+          resolve({ name, store, accessor }) {
+            if (!name.startsWith("@plugin")) return;
+
+            if (!store.plugin) store.plugin = { ...pluginData, default: pluginData };
+
+            return `${accessor}${name
+              .slice(1)
+              .split("/")
+              .map((i) => `[${JSON.stringify(i)}]`)
+              .join("")}`;
+          },
+        },
+        urlImport(),
+      ],
+    });
 
     enabled[id] = { onUnload: onUnload ?? (() => {}) };
   } catch (e) {
@@ -119,9 +139,7 @@ export async function installPluginFromURL(url, enabled = true) {
 }
 
 // The callback gets called once idb responds and the plugins are loaded into memory.
-const doneWaitingForIdb = store.on(pluginStore, async () => {
-  doneWaitingForIdb();
-
+pluginStoreReady.then(async () => {
   // We don't attempt to load plugins if CSP exists because loading every plugin will fail and automatically disable the plugin.
   if (document.querySelector(`[http-equiv="Content-Security-Policy"]`)) return;
 

@@ -19,11 +19,17 @@ const idbStore = createIdbStore("__NEPTUNE_IDB_STORAGE", "__NEPTUNE_IDB_STORAGE"
 export function createPersistentObject(id) {
   const persistentObject = store({});
 
-  idbGet(id, idbStore).then((obj) => store.reconcile(persistentObject, obj ?? {}));
-
   store.on(persistentObject, () => {
     idbSet(id, store.unwrap(persistentObject), idbStore);
   });
 
-  return persistentObject;
+  return [
+    persistentObject,
+    new Promise((res) =>
+      idbGet(id, idbStore).then((obj) => {
+        store.reconcile(persistentObject, obj ?? {});
+        res()
+      }),
+    ),
+  ];
 }
