@@ -10,11 +10,11 @@ export const enabled = store({});
 
 export const getPluginById = (id) => pluginStore.find((p) => p.id == id);
 
-export function disablePlugin(id) {
+export async function disablePlugin(id) {
   getPluginById(id).enabled = false;
 
   try {
-    enabled[id]?.onUnload?.();
+    await enabled[id]?.onUnload?.();
   } catch (e) {
     console.error("Failed to completely clean up neptune plugin!\n", e);
   }
@@ -100,6 +100,12 @@ export async function installPlugin(id, code, manifest, enabled = true) {
 }
 
 export async function removePlugin(id) {
+  try {
+    if (enabled[id]) await enabled[id].onUnload()
+  } catch {
+    console.log("[neptune] failed to unload plugin upon removal")
+  }
+  
   pluginStore.splice(
     pluginStore.findIndex((p) => p.id == id),
     1,
