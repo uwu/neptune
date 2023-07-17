@@ -7,6 +7,7 @@ import { observe } from "./api/observe.js";
 import registerTab from "./api/registerTab.js";
 import registerRoute from "./api/registerRoute.js";
 import hookContextMenu from "./api/hookContextMenu.js";
+import showModal from "./api/showModal.js";
 
 export default {
   patcher,
@@ -16,6 +17,7 @@ export default {
   registerTab,
   registerRoute,
   hookContextMenu,
+  showModal,
   voby,
   plugins,
 };

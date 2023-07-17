@@ -1,3 +1,4 @@
+import { store } from "voby";
 import { createPersistentObject, neptuneIdbStore } from "./utils.js";
 import { del } from "idb-keyval";
 import quartz from "@uwu/quartz";
@@ -5,7 +6,7 @@ import urlImport from "quartz-plugin-url-import";
 import { actions } from "../handleExfiltrations.js";
 
 export const [pluginStore, pluginStoreReady] = createPersistentObject("NEPTUNE_PLUGINS");
-export const enabled = {};
+export const enabled = store({});
 
 export function disablePlugin(id) {
   pluginStore[id].enabled = false;
@@ -30,17 +31,19 @@ export async function enablePlugin(id) {
 
 async function runPlugin(id, code) {
   try {
-    const [persistentStorage, persistentStorageReady] = createPersistentObject(id + "_PERSISTENT_STORAGE");
+    const [persistentStorage, persistentStorageReady] = createPersistentObject(
+      id + "_PERSISTENT_STORAGE",
+    );
 
     await persistentStorageReady;
 
     const pluginData = {
       manifest: pluginStore[id].manifest,
       persist: persistentStorage,
-      id
+      id,
     };
 
-    const { onUnload } = await quartz(code, {
+    const { onUnload, Settings } = await quartz(code, {
       plugins: [
         {
           resolve({ name }) {
@@ -71,6 +74,7 @@ async function runPlugin(id, code) {
     });
 
     enabled[id] = { onUnload: onUnload ?? (() => {}) };
+    if (Settings) enabled[id].Settings = Settings;
   } catch (e) {
     await disablePlugin(id);
 
@@ -90,7 +94,7 @@ export async function installPlugin(id, code, manifest, enabled = true) {
 
 export async function removePlugin(id) {
   delete pluginStore[id];
-  await del("_PERSISTENT_STORAGE", neptuneIdbStore)
+  await del("_PERSISTENT_STORAGE", neptuneIdbStore);
 }
 
 // This handles caching too!
