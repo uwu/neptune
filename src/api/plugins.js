@@ -33,10 +33,11 @@ async function runPlugin(id, code) {
     const [persistentStorage, persistentStorageReady] = createPersistentObject(id + "_PERSISTENT_STORAGE");
 
     await persistentStorageReady;
-    
+
     const pluginData = {
       manifest: pluginStore[id].manifest,
       persist: persistentStorage,
+      id
     };
 
     const { onUnload } = await quartz(code, {
