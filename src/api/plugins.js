@@ -101,11 +101,11 @@ export async function installPlugin(id, code, manifest, enabled = true) {
 
 export async function removePlugin(id) {
   try {
-    if (enabled[id]) await enabled[id].onUnload()
+    if (enabled[id]) await enabled[id].onUnload();
   } catch {
-    console.log("[neptune] failed to unload plugin upon removal")
+    console.log("[neptune] failed to unload plugin upon removal");
   }
-  
+
   pluginStore.splice(
     pluginStore.findIndex((p) => p.id == id),
     1,
@@ -156,7 +156,7 @@ export async function installPluginFromURL(url, enabled = true) {
       manifest,
       enabled,
       update: true,
-    }
+    };
 
     pluginStore.unshift(plugin);
 
