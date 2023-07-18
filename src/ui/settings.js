@@ -80,6 +80,10 @@ const tabs = [
     name: "Themes",
     component: () => html`[WIP]`,
   },
+  {
+    name: "Addon Store",
+    component: () => html`[WIP]`
+  }
 ];
 
 function PluginCard({ plugin }) {
