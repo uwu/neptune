@@ -34,3 +34,6 @@ export function createPersistentObject(id, isArray = false) {
     ),
   ];
 }
+
+export const getMediaURLFromID = (id, path = "/1280x1280.jpg") =>
+  "https://resources.tidal.com/images/" + id.split("-").join("/") + path;
