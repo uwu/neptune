@@ -1,4 +1,5 @@
 {
   "name": "neptune",
-  "main": "index.js"
+  "main": "index.js",
+  "version": "9999.9999.9999"
 }
