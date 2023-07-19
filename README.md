@@ -3,6 +3,9 @@
 ## what is neptune?
 neptune is an experimental client mod for TIDAL that provides a simple plugin and theme system.
 
+## screenshot(s)
+![a screenshot of the neptune settings tab](https://github.com/uwu/neptune/raw/master/assets/neptune-screenshot.png)
+
 ## how can i install neptune?
 you can download the neptune installer [here](https://github.com/uwu/neptune-installer/releases).
 
