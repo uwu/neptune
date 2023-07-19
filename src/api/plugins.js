@@ -12,14 +12,15 @@ export const getPluginById = (id) => pluginStore.find((p) => p.id == id);
 
 export async function disablePlugin(id) {
   getPluginById(id).enabled = false;
+  const { onUnload } = enabled[id];
+
+  delete enabled[id];
 
   try {
-    await enabled[id]?.onUnload?.();
+    await onUnload?.();
   } catch (e) {
     console.error("Failed to completely clean up neptune plugin!\n", e);
   }
-
-  delete enabled[id];
 }
 
 export function togglePlugin(id) {
@@ -141,6 +142,23 @@ export async function fetchPluginFromURL(url) {
       hash: manifest.hash,
     },
   ];
+}
+
+export async function reloadPlugin(plugin) {
+  let pluginWasEnabled = plugin.enabled;
+
+  if (pluginWasEnabled) disablePlugin(plugin.id);
+
+  if (plugin.hasOwnProperty("update")) {
+    try {
+      const [code, manifest] = await fetchPluginFromURL(plugin.id);
+
+      plugin.manifest = manifest;
+      plugin.code = code;
+    } catch {}
+  }
+
+  if (pluginWasEnabled) enablePlugin(plugin.id)
 }
 
 export async function installPluginFromURL(url, enabled = true) {
