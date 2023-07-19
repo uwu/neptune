@@ -1,5 +1,3 @@
-// I'll refactor this to be separated out into different files in the
-
 import { $, html } from "voby";
 import { PluginTab } from "./pluginsTab.js";
 import registerRoute from "../api/registerRoute.js";
