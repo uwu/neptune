@@ -175,8 +175,11 @@ const ProxiedBrowserWindow = new Proxy(electron.BrowserWindow, {
     const options = args[0];
     let originalPreload;
 
-    if (options.webPreferences?.preload && options.title) {
-      originalPreload = options.webPreferences.preload;
+    // tidal-hifi does not set the title, rely on dev tools instead.
+    const isTidalWindow = options.title == "TIDAL" || options.webPreferences?.devTools;
+
+    if (isTidalWindow) {
+      originalPreload = options.webPreferences?.preload;
       // We replace the preload instead of using setPreloads because of some
       // differences in internal behaviour.
       options.webPreferences.preload = path.join(__dirname, "preload.js");
@@ -187,13 +190,13 @@ const ProxiedBrowserWindow = new Proxy(electron.BrowserWindow, {
     }
 
     const window = new target(options);
-    if (options.title != "TIDAL") return window;
+    if (!isTidalWindow) return window;
 
     window.webContents.originalPreload = originalPreload;
 
     attachDebugger(
       window.webContents.debugger,
-      options.webPreferences.devTools ? "listen.tidal.com" : "desktop.tidal.com",
+      options.webPreferences?.devTools ? "listen.tidal.com" : "desktop.tidal.com", // tidal-hifi uses listen.tidal.com
     );
     return window;
   },
