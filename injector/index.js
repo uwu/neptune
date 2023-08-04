@@ -49,10 +49,7 @@ const getNeptuneBundle = () =>
     ? fetchPromise
     : Promise.resolve(
         fs.readFileSync(path.join(localBundle, "neptune.js"), "utf8") +
-          `\n//# sourceMappingURL=file:////${path.join(
-            localBundle,
-            "neptune.js.map"
-          )}`
+          `\n//# sourceMappingURL=file:////${path.join(localBundle, "neptune.js.map")}`,
       );
 // #endregion
 
@@ -67,24 +64,31 @@ electron.ipcMain.handle("NEPTUNE_BUNDLE_FETCH", getNeptuneBundle);
 // #region Redux Devtools
 electron.app.whenReady().then(() => {
   electron.session.defaultSession.loadExtension(
-    path.join(process.resourcesPath, "app", "redux-devtools")
+    path.join(process.resourcesPath, "app", "redux-devtools"),
   );
 });
 // #endregion
 
 // #region CSP removal
-async function attachDebugger(dbg) {
+async function attachDebugger(dbg, domain = "desktop.tidal.com") {
   dbg.attach();
   dbg.on("message", async (_, method, params, sessionId) => {
     if (sessionId === "") sessionId = undefined;
     if (method === "Fetch.requestPaused") {
-      console.log(params.request.url)
-      const res = await dbg.sendCommand("Fetch.getResponseBody", {
-        requestId: params.requestId,
-      }, sessionId);
+      console.log(params.request.url);
+      const res = await dbg.sendCommand(
+        "Fetch.getResponseBody",
+        {
+          requestId: params.requestId,
+        },
+        sessionId,
+      );
 
       let body = res.base64Encoded ? atob(res.body) : res.body;
-      body = body.replace(/<meta http-equiv="Content-Security-Policy" content=".*?">/, "<!-- neptune removed csp -->");
+      body = body.replace(
+        /<meta http-equiv="Content-Security-Policy" content=".*?">/,
+        "<!-- neptune removed csp -->",
+      );
 
       // Add header to identify patched request in cache
       params.responseHeaders.push({
@@ -92,24 +96,35 @@ async function attachDebugger(dbg) {
         value: "patched",
       });
 
-      dbg.sendCommand("Fetch.fulfillRequest", {
-        requestId: params.requestId,
-        responseCode: 200,
-        responseHeaders: params.responseHeaders,
-        body: btoa(body),
-      }, sessionId);
+      dbg.sendCommand(
+        "Fetch.fulfillRequest",
+        {
+          requestId: params.requestId,
+          responseCode: 200,
+          responseHeaders: params.responseHeaders,
+          body: btoa(body),
+        },
+        sessionId,
+      );
     } else if (method === "Target.attachedToTarget") {
       const { sessionId } = params;
 
-      dbg.sendCommand("Fetch.enable", {
-        patterns: [{
-          urlPattern: "https://desktop.tidal.com/",
-          requestStage: "Response",
-        }, {
-          urlPattern: "https://desktop.tidal.com/index.html", // Workbox rewrites the URL to include index.html during initial cache build
-          requestStage: "Response",
-        }],
-      }, sessionId);
+      dbg.sendCommand(
+        "Fetch.enable",
+        {
+          patterns: [
+            {
+              urlPattern: `https://${domain}/`,
+              requestStage: "Response",
+            },
+            {
+              urlPattern: `https://${domain}/index.html`, // Workbox rewrites the URL to include index.html during initial cache build
+              requestStage: "Response",
+            },
+          ],
+        },
+        sessionId,
+      );
     }
   });
 
@@ -117,22 +132,22 @@ async function attachDebugger(dbg) {
     autoAttach: true,
     waitForDebuggerOnStart: false,
     flatten: true,
-    filter: [
-      { type: "service_worker" },
-    ],
+    filter: [{ type: "service_worker" }],
   });
 
   // Enable interception on page itself if service worker hasn't been registered yet.
   dbg.sendCommand("Fetch.enable", {
-    patterns: [{
-      urlPattern: "https://desktop.tidal.com/",
-      requestStage: "Response",
-    }],
+    patterns: [
+      {
+        urlPattern: `https://${domain}/`,
+        requestStage: "Response",
+      },
+    ],
   });
 
   // Delete unpatched index cache entry if it exists
   const { caches } = await dbg.sendCommand("CacheStorage.requestCacheNames", {
-    securityOrigin: "https://desktop.tidal.com",
+    securityOrigin: `https://${domain}`,
   });
   if (caches.length !== 1) return;
   const { cacheId } = caches[0];
@@ -176,7 +191,10 @@ const ProxiedBrowserWindow = new Proxy(electron.BrowserWindow, {
 
     window.webContents.originalPreload = originalPreload;
 
-    attachDebugger(window.webContents.debugger);
+    attachDebugger(
+      window.webContents.debugger,
+      options.webPreferences.devTools ? "listen.tidal.com" : "desktop.tidal.com",
+    );
     return window;
   },
 });
@@ -204,12 +222,9 @@ electron.Menu.buildFromTemplate = (template) => {
 logger.log("Starting original...");
 // #region Start original
 let originalPath = path.join(process.resourcesPath, "app.asar");
-if (!fs.existsSync(originalPath))
-  originalPath = path.join(process.resourcesPath, "original.asar");
+if (!fs.existsSync(originalPath)) originalPath = path.join(process.resourcesPath, "original.asar");
 
-const originalPackage = require(path.resolve(
-  path.join(originalPath, "package.json")
-));
+const originalPackage = require(path.resolve(path.join(originalPath, "package.json")));
 const startPath = path.join(originalPath, originalPackage.main);
 
 require.main.filename = startPath;
