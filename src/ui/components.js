@@ -1,8 +1,28 @@
 import { html, render, $, isObservable } from "voby";
 
+customElements.define(
+  "neptune-reactive-root",
+  class extends HTMLElement {
+    constructor(children) {
+      super();
+      this.c = () => {};
+    };
+
+    connectedCallback() {
+      this.style.display = "contents"
+      this.dispose?.();
+      this.dispose = render(html`${this.c()}`, this)
+    };
+
+    disconnectedCallback() {
+      this.dispose?.()
+    }
+  },
+);
+
 export function ReactiveRoot({ children }) {
-  const root = html`<div style="display:contents" />`();
-  root.addEventListener("DOMNodeRemovedFromDocument", render(html`${children}`, root));
+  const root = html`<neptune-reactive-root></neptune-reactive-root>`()
+  root.c = () => children;
 
   return root;
 }
