@@ -12,7 +12,7 @@ export const getPluginById = (id) => pluginStore.find((p) => p.id == id);
 
 export async function disablePlugin(id) {
   getPluginById(id).enabled = false;
-  const { onUnload } = enabled[id];
+  const onUnload = enabled[id].onUnload;
 
   delete enabled[id];
 
