@@ -123,8 +123,8 @@ export default function loadStyles() {
     transition-delay: 0s;
     position: relative;
     border-radius: 100%;
-    height: 40px;
-    width: 40px;
+    min-height: 40px;
+    min-width: 40px;
     display: grid;
     place-items: center;
   }
