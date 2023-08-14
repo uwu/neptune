@@ -185,8 +185,7 @@ export async function installPluginFromURL(url, enabled = true) {
   }
 }
 
-// The callback gets called once idb responds and the plugins are loaded into memory.
-intercept("settings/UPDATE_STATE_FROM_LOCAL_STORAGE", async () => {
+intercept("page/IS_LOADING", async () => {
   // We don't attempt to load plugins if CSP exists because loading every plugin will fail and automatically disable the plugin.
   if (document.querySelector(`[http-equiv="Content-Security-Policy"]`)) return;
 
