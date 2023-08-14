@@ -4,6 +4,7 @@ import { del } from "idb-keyval";
 import quartz from "@uwu/quartz";
 import urlImport from "quartz-plugin-url-import";
 import { actions } from "../handleExfiltrations.js";
+import intercept from "./intercept.js";
 
 export const [pluginStore, pluginStoreReady] = createPersistentObject("NEW_NEPTUNE_PLUGINS", true);
 export const enabled = store({});
@@ -185,7 +186,7 @@ export async function installPluginFromURL(url, enabled = true) {
 }
 
 // The callback gets called once idb responds and the plugins are loaded into memory.
-pluginStoreReady.then(async () => {
+intercept("locale/BUNDLE_SWITCH_SUCCESS", async () => {
   // We don't attempt to load plugins if CSP exists because loading every plugin will fail and automatically disable the plugin.
   if (document.querySelector(`[http-equiv="Content-Security-Policy"]`)) return;
 
@@ -205,4 +206,4 @@ pluginStoreReady.then(async () => {
     // remote plugin installation is handled.
     if (plugin.enabled) runPlugin(plugin);
   }
-});
+}, true);
