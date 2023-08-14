@@ -48,7 +48,7 @@ instead("clearTimeout", window, clearDelayHandler);
 
 // If the app fails to load for any reason we simply reload the page.
 setTimeout(() => {
-  if (document.getElementById("skeleton-logged-out")) window.location.reload();
+  if (!windowObject.store) window.location.reload();
 }, 7000);
 
 window.neptune = windowObject;
