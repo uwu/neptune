@@ -187,7 +187,7 @@ export async function installPluginFromURL(url, enabled = true) {
 // The callback gets called once idb responds and the plugins are loaded into memory.
 pluginStoreReady.then(async () => {
   // We don't attempt to load plugins if CSP exists because loading every plugin will fail and automatically disable the plugin.
-  if (document.querySelector(`[http-equiv="Content-Security-Policy"]`) || document.getElementById("skeleton-logged-out")) return;
+  if (document.querySelector(`[http-equiv="Content-Security-Policy"]`)) return;
 
   for (const plugin of pluginStore) {
     if (plugin.update) {
