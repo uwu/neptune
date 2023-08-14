@@ -185,7 +185,7 @@ export async function installPluginFromURL(url, enabled = true) {
   }
 }
 
-intercept("page/IS_LOADING", async () => {
+intercept("playQueue/LOAD_PLAY_QUEUE_FROM_LOCAL_STORAGE_SUCCESS", async () => {
   // We don't attempt to load plugins if CSP exists because loading every plugin will fail and automatically disable the plugin.
   if (document.querySelector(`[http-equiv="Content-Security-Policy"]`)) return;
 
