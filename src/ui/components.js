@@ -3,7 +3,7 @@ import { html, render, $, isObservable } from "voby";
 customElements.define(
   "neptune-reactive-root",
   class extends HTMLElement {
-    constructor(children) {
+    constructor() {
       super();
       this.c = () => {};
     };
