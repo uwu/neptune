@@ -11,8 +11,9 @@ export default function intercept(types, cb, once = false) {
 
     const handleIntercept = once
       ? (...args) => {
-          cb(...args);
           unintercept();
+
+          return cb(...args);
         }
       : cb;
     interceptors[type].push(handleIntercept);
