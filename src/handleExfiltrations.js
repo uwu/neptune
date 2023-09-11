@@ -32,146 +32,156 @@ Object.defineProperty(window, "webpackChunk_tidal_web", {
   get: () => webpackObject,
   set(val) {
     if (webpackObject) return true;
+
     loadStyles();
 
-    /*
-      We replace webpackObject with a proxy that waits for .push to be gotten.
-      This could be replaced with an Object.defineProperty call that assigns push to a getter,
-      but I didn't feel like it. Fuck you.
-    */
-    webpackObject = new Proxy(val, {
-      get(obj, prop) {
-        if (prop == "push" && !patchedPush) {
-          patchedPush = true;
+    webpackObject = val;
 
-          // This patcher call patches .push.
-          patcher.before(prop, obj, (args) => {
-            // Push can be called with multiple chunks, so instead of only doing the first argument we handle all of them.
-            for (let arg of args) {
-              if (!arg[1]) continue;
+    const originalPush = webpackObject.push;
+    let newPush;
+    Object.defineProperty(webpackObject, "push", {
+      set(v) {
+        if (!newPush) newPush = v;
+      },
+      get: () =>
+        newPush
+          ? function () {
+              try {
+                for (const chunk of arguments) {
+                  const [, modules] = chunk;
+                  if (!modules) continue;
 
-              // Each chunk contains an object containing a list of modules, so we iterate over each module id.
-              for (let id in arg[1]) {
-                // Modules get passed webpackRequire as their third argument, so we patch over each module to essentially patch webpackRequire.
-                patcher.before(id, arg[1], (args) => {
-                  const wpRequire = args[2];
+                  for (const moduleId in modules) {
+                    const originalModule = modules[moduleId];
 
-                  if (!windowObject.hasOwnProperty("modules"))
-                    Object.defineProperty(windowObject, "modules", {
-                      get: () => Object.values(getModulesFromWpRequire(wpRequire)),
-                    });
+                    modules[moduleId] = function () {
+                      const wpRequire = arguments[2];
 
-                  // See above: patching webpackRequire.
-                  patcher.after(2, args, (_, resp) => {
-                    try {
-                      /*
-                        This entire block exfiltrates modules we need / patches them.
-                        The only modules we need export an object, so we return if they aren't an object.
-                      */
-                      if (typeof resp != "object") return;
+                      if (!windowObject.hasOwnProperty("modules"))
+                        Object.defineProperty(windowObject, "modules", {
+                          get: () => Object.values(getModulesFromWpRequire(wpRequire)),
+                        });
 
-                      try {
-                        if (!exfiltratedStore) {
-                          // We sift through the modules to find a module that exports a function that gets the global Redux store.
-                          const [key] = Object.entries(resp).find(([, e]) =>
-                            e?.toString?.().includes?.('Error("No global store set"'),
-                          );
+                      // thinking i'll add a try { } catch { } finally { } to this.
+                      arguments[2] = new Proxy(wpRequire, {
+                        apply(target, thisArg, args) {
+                          const originalResponse = target.apply(thisArg, args);
+                          if (typeof originalResponse != "object") return originalResponse;
 
-                          if (key) exfiltratedStore = true;
+                          // neptune.store exfiltration code
+                          try {
+                            if (!exfiltratedStore) {
+                              const [key] = Object.entries(originalResponse).find(([, e]) =>
+                                e?.toString?.().includes?.('Error("No global store set"'),
+                              );
 
-                          /*
-                            Because we patch so early, the global Redux store is not defined yet,
-                            so we wait for the getStore function to be called.
-                          */
-                          patcher.after(key, resp, (_, resp) => {
-                            if (!typeof resp == "object" && windowObject.store) return;
+                              if (key) exfiltratedStore = true;
 
-                            windowObject.store = resp;
-                          });
-                        }
-                      } catch {}
+                              const unpatch = patcher.after(key, originalResponse, (_, resp) => {
+                                if (!typeof resp == "object" && windowObject.store) return;
 
-                      try {
-                        if (patchedPrepareAction) return;
+                                windowObject.store = resp;
+                                unpatch();
+                              });
+                            }
+                          } catch {}
 
-                        let found = Object.entries(resp).find(([, possiblyPrepareAction]) =>
-                          possiblyPrepareAction
-                            ?.toString?.()
-                            ?.includes?.(`new Error("prepareAction did not return an object");`),
-                        );
+                          // neptune.intercept setup code
+                          try {
+                            if (patchedPrepareAction) return originalResponse;
 
-                        if (!found) return;
-
-                        patchedPrepareAction = true;
-                        patcher.after(found[0], resp, ([type], resp) => {
-                          if (!interceptors[type]) interceptors[type] = [];
-
-                          const [parent, child] = type
-                            .split("/")
-                            .map((n) =>
-                              n.toUpperCase() == n
-                                ? n.toLowerCase().replace(/_([a-z])/g, (_, i) => i.toUpperCase())
-                                : n,
+                            let found = Object.entries(originalResponse).find(
+                              ([, possiblyPrepareAction]) =>
+                                possiblyPrepareAction
+                                  ?.toString?.()
+                                  ?.includes?.(
+                                    `new Error("prepareAction did not return an object");`,
+                                  ),
                             );
 
-                          const builtAction = (...args) => {
-                            const act = resp(...args);
+                            if (!found) return originalResponse;
 
-                            if (!(act.__proto__.toString() == "[object Promise]"))
-                              return windowObject.store.dispatch(act);
+                            patchedPrepareAction = true;
 
-                            return new Promise(async (res, rej) => {
-                              try {
-                                res(windowObject.store.dispatch(await act));
-                              } catch (e) {
-                                rej(e);
+                            patcher.after(found[0], originalResponse, ([type], resp) => {
+                              if (!interceptors[type]) interceptors[type] = [];
+
+                              const [parent, child] = type
+                                .split("/")
+                                .map((n) =>
+                                  n.toUpperCase() == n
+                                    ? n
+                                        .toLowerCase()
+                                        .replace(/_([a-z])/g, (_, i) => i.toUpperCase())
+                                    : n,
+                                );
+
+                              const builtAction = (...args) => {
+                                const act = resp(...args);
+
+                                if (!(act.__proto__.toString() == "[object Promise]"))
+                                  return windowObject.store.dispatch(act);
+
+                                return new Promise(async (res, rej) => {
+                                  try {
+                                    res(windowObject.store.dispatch(await act));
+                                  } catch (e) {
+                                    rej(e);
+                                  }
+                                });
+                              };
+
+                              if (child) {
+                                if (!actions[parent]) actions[parent] = {};
+
+                                actions[parent][child] = builtAction;
+                              } else {
+                                actions[parent] = builtAction;
                               }
+
+                              return new Proxy(resp, {
+                                apply(orig, ctxt, [payload]) {
+                                  try {
+                                    let shouldDispatch = true;
+
+                                    const interceptorData = [payload, type];
+
+                                    for (let interceptor of interceptors[type]) {
+                                      try {
+                                        const resp = interceptor(interceptorData);
+
+                                        if (resp === true) shouldDispatch = false;
+                                      } catch (e) {
+                                        console.error("Failed to run interceptor!\n", e);
+                                      }
+                                    }
+
+                                    return shouldDispatch
+                                      ? orig.apply(ctxt, [interceptorData[0]])
+                                      : { type: "NOOP" };
+                                  } catch (e) {
+                                    console.log(e);
+                                  }
+                                },
+                              });
                             });
-                          };
+                          } catch {}
 
-                          if (child) {
-                            if (!actions[parent]) actions[parent] = {};
+                          return originalResponse;
+                        },
+                      });
 
-                            actions[parent][child] = builtAction;
-                          } else {
-                            actions[parent] = builtAction;
-                          }
-
-                          return new Proxy(resp, {
-                            apply(orig, ctxt, [payload]) {
-                              let shouldDispatch = true;
-
-                              const interceptorData = [payload, type];
-
-                              for (let interceptor of interceptors[type]) {
-                                try {
-                                  const resp = interceptor(interceptorData);
-
-                                  if (resp === true) shouldDispatch = false;
-                                } catch (e) {
-                                  console.error("Failed to run interceptor!\n", e);
-                                }
-                              }
-
-                              return shouldDispatch ? orig.apply(ctxt, interceptorData[0]) : { type: "NOOP" };
-                            },
-                          });
-                        });
-                      } catch {}
-                    } catch (e) {
-                      console.error(e);
-                    }
-                  });
-                });
+                      return originalModule.apply(this, arguments);
+                    };
+                  }
+                }
+              } catch (e) {
+                console.error("[neptune] failed to hook properly", e);
               }
+
+              return newPush.apply(this, arguments);
             }
-          });
-        }
-
-        return obj[prop];
-      },
+          : originalPush,
     });
-
-    return true;
   },
 });
