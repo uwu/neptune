@@ -1,0 +1,30 @@
+{
+  "name": "neptune-types",
+  "version": "1.0.0",
+  "description": "TypeScript type declarations for neptune plugins",
+  "homepage": "https://github.com/uwu/neptune/tree/master/types",
+  "license": "MS-PL",
+  "contributors": [
+    {
+      "name": "relative",
+      "url": "https://relative.im",
+      "githubUsername": "relative"
+    }
+  ],
+  "main": "",
+  "types": "index.d.ts",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/uwu/neptune.git",
+    "directory": "types"
+  },
+  "dependencies": {
+    "idb-keyval": "^6.2.1",
+    "immutable": "5.0.0-beta.4",
+    "redux": "^4.2.1",
+    "spitroast": "^1.4.3",
+    "type-fest": "^4.3.1",
+    "voby": "^0.54.0",
+    "zod": "^3.2.2"
+  }
+}
