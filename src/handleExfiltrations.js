@@ -145,7 +145,7 @@ Object.defineProperty(window, "webpackChunk_tidal_web", {
                                 try {
                                   const resp = interceptor(args);
 
-                                  if (resp === false) shouldDispatch = false;
+                                  if (resp === true) shouldDispatch = false;
                                 } catch (e) {
                                   console.error("Failed to run interceptor!\n", e);
                                 }
