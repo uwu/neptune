@@ -138,12 +138,14 @@ Object.defineProperty(window, "webpackChunk_tidal_web", {
                           }
 
                           return new Proxy(resp, {
-                            apply(orig, ctxt, args) {
+                            apply(orig, ctxt, [payload]) {
                               let shouldDispatch = true;
+
+                              const interceptorData = [payload, type];
 
                               for (let interceptor of interceptors[type]) {
                                 try {
-                                  const resp = interceptor(args);
+                                  const resp = interceptor(interceptorData);
 
                                   if (resp === true) shouldDispatch = false;
                                 } catch (e) {
@@ -151,7 +153,7 @@ Object.defineProperty(window, "webpackChunk_tidal_web", {
                                 }
                               }
 
-                              return shouldDispatch ? orig.apply(ctxt, args) : { type: "NOOP" };
+                              return shouldDispatch ? orig.apply(ctxt, [payload]) : { type: "NOOP" };
                             },
                           });
                         });
