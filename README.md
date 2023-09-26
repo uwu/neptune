@@ -14,6 +14,8 @@ neptune exfiltrates every single action one can do in TIDAL into an easily acces
 
 TIDAL is built on [Redux](https://redux.js.org) and neptune's actions are simply exfiltrated Redux actions, which are explained in [this document](https://redux.js.org/tutorials/fundamentals/part-2-concepts-data-flow#actions) on Redux's website.
 
+neptune includes full type definitions for all of TIDAL's actions.
+
 To get the global Redux store's state, you can use `window.neptune.store.getState()`. The return value of `getState()` will change as a direct result of actions.
 
 To intercept and subscribe to actions, you can use `window.neptune.intercept("category/ACTION_NAME", ([payload]) => {})`, with the first argument being the name (or an array of names) of the action(s) to subscribe to, and the second argument being a function that gets called upon that action being ran. If you return `true` the action will automatically be cancelled.
