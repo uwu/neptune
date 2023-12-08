@@ -2,13 +2,7 @@ import { appendStyle, createPersistentObject, parseManifest } from "./utils.js";
 
 export const [themesStore, themesStoreReady] = createPersistentObject("NEPTUNE_THEMES", true);
 
-let updateThemeStyle = () => {};
-
-document.addEventListener("DOMContentLoaded", () => {
-  updateThemeStyle = appendStyle("");
-
-  reloadThemes();
-});
+let updateThemeStyle = appendStyle("");
 
 function reloadThemes() {
   updateThemeStyle(themesStore.filter(t => t.enabled).map((t) => `@import url("${t.url}")`).join(";"));

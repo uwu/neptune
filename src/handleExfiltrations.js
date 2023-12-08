@@ -19,6 +19,9 @@ let webpackObject;
 let patchedPrepareAction = false;
 let exfiltratedStore;
 
+// Main store exfiltration
+export let store;
+
 // Built action handlers
 export const actions = {};
 windowObject.actions = actions;
@@ -80,7 +83,9 @@ Object.defineProperty(window, "webpackChunk_tidal_web", {
                               const unpatch = patcher.after(key, originalResponse, (_, resp) => {
                                 if (!typeof resp == "object" && windowObject.store) return;
 
-                                windowObject.store = resp;
+                                store = resp;
+                                // Hate.
+                                windowObject.store = store;
                                 unpatch();
                               });
                             }

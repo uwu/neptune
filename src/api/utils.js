@@ -2,15 +2,15 @@ import { createStore as createIdbStore, set as idbSet, get as idbGet } from "idb
 import { store } from "voby";
 
 export function appendStyle(style) {
-  const styleTag = document.createElement("style");
-  styleTag.innerHTML = style;
+  const sheet = new CSSStyleSheet();
+  sheet.replaceSync(style);
 
-  document.head.appendChild(styleTag);
+  document.adoptedStyleSheets.push(sheet);
 
   return (newStyle) => {
-    if (newStyle == undefined) return document.head.removeChild(styleTag);
+    if (newStyle == undefined) return document.adoptedStyleSheets = document.adoptedStyleSheets.slice(document.adoptedStyleSheets.indexOf(sheet), 1)
 
-    styleTag.innerHTML = newStyle;
+    sheet.replaceSync(newStyle)
   };
 }
 
