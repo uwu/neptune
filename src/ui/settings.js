@@ -1,5 +1,6 @@
 import { $, html } from "voby";
 import { PluginTab } from "./pluginsTab.js";
+import { ThemesTab } from "./themesTab.js";
 import registerRoute from "../api/registerRoute.js";
 import hookContextMenu from "../api/hookContextMenu.js";
 
@@ -11,7 +12,7 @@ const tabs = [
   },
   {
     name: "Themes",
-    component: () => html`[WIP]`,
+    component: ThemesTab,
   },
   {
     name: "Addon Store",

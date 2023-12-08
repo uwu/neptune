@@ -1,5 +1,5 @@
 import { store } from "voby";
-import { createPersistentObject, neptuneIdbStore } from "./utils.js";
+import { createPersistentObject, neptuneIdbStore, parseManifest } from "./utils.js";
 import { del } from "idb-keyval";
 import quartz from "@uwu/quartz";
 import urlImport from "quartz-plugin-url-import";
@@ -122,9 +122,9 @@ export async function fetchPluginFromURL(url) {
 
   if (!parsedURL.endsWith("/")) parsedURL += "/";
 
-  const manifest = await (await fetch(parsedURL + "manifest.json", { cache: "no-store" })).json();
-  if (!["name", "author", "description", "hash"].every((i) => typeof manifest[i] === "string"))
-    throw "Manifest doesn't contain required properties!";
+  const manifest = parseManifest(
+    await (await fetch(parsedURL + "manifest.json", { cache: "no-store" })).json(),
+  );
 
   const plugin = getPluginById(url);
   let code = plugin?.code;
@@ -159,7 +159,7 @@ export async function reloadPlugin(plugin) {
     } catch {}
   }
 
-  if (pluginWasEnabled) enablePlugin(plugin.id)
+  if (pluginWasEnabled) enablePlugin(plugin.id);
 }
 
 export async function installPluginFromURL(url, enabled = true) {
@@ -186,24 +186,28 @@ export async function installPluginFromURL(url, enabled = true) {
 }
 
 // Load as early as we possibly can.
-intercept("session/RECEIVED_COUNTRY_CODE", async () => {
-  // We don't attempt to load plugins if CSP exists because loading every plugin will fail and automatically disable the plugin.
-  if (document.querySelector(`[http-equiv="Content-Security-Policy"]`)) return;
+intercept(
+  "session/RECEIVED_COUNTRY_CODE",
+  async () => {
+    // We don't attempt to load plugins if CSP exists because loading every plugin will fail and automatically disable the plugin.
+    if (document.querySelector(`[http-equiv="Content-Security-Policy"]`)) return;
 
-  for (const plugin of pluginStore) {
-    if (plugin.update) {
-      try {
-        const [code, manifest] = await fetchPluginFromURL(plugin.id);
+    for (const plugin of pluginStore) {
+      if (plugin.update) {
+        try {
+          const [code, manifest] = await fetchPluginFromURL(plugin.id);
 
-        plugin.manifest = manifest;
-        plugin.code = code;
-      } catch {
-        console.log("[neptune] failed to update plugin");
+          plugin.manifest = manifest;
+          plugin.code = code;
+        } catch {
+          console.log("[neptune] failed to update plugin");
+        }
       }
-    }
 
-    // We do not currently account for plugin updates, but this will be handled once
-    // remote plugin installation is handled.
-    if (plugin.enabled) runPlugin(plugin);
-  }
-}, true);
+      // We do not currently account for plugin updates, but this will be handled once
+      // remote plugin installation is handled.
+      if (plugin.enabled) runPlugin(plugin);
+    }
+  },
+  true,
+);

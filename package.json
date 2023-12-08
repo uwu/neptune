@@ -16,7 +16,7 @@
     "idb-keyval": "^6.2.1",
     "quartz-plugin-url-import": "^1.0.1",
     "spitroast": "^1.4.3",
-    "voby": "^0.54.0"
+    "voby": "^0.57.1"
   },
   "type": "module",
   "devDependencies": {

@@ -8,7 +8,7 @@ export default function loadStyles() {
     width: calc(100% - var(--defaultPadding)*2);
   }
 
-  .neptune-plugin-card {
+  .neptune-card {
     background-color: var(--wave-color-solid-base-brighter, var(--wave-color-opacity-contrast-fill-ultra-thick));
     border: 1px solid var(--wave-color-opacity-contrast-fill-ultra-thin);
     border-radius: 12px;
@@ -18,7 +18,7 @@ export default function loadStyles() {
     justify-content: center;
   }
 
-  .neptune-plugin-card-content {
+  .neptune-card-content {
     display: flex;
     justify-content: space-between;
     padding: 0 15px 0px 15px;
@@ -29,7 +29,7 @@ export default function loadStyles() {
     box-shadow: 0px 2px var(--cyan-blue);
   }
   
-  .neptune-plugin-title {
+  .neptune-card-title {
     font-weight: 600;
     font-size: medium;
   }
@@ -87,6 +87,8 @@ export default function loadStyles() {
     color: var(--glass-white-2);
     display: block;
     width: 100%;
+    height: 40px;
+    box-sizing: border-box;
   }
 
   .neptune-text-input:not([readonly]):focus {

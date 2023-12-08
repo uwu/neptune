@@ -2,6 +2,7 @@ import * as voby from "voby";
 import * as patcher from "spitroast";
 import * as utils from "./api/utils.js";
 import * as plugins from "./api/plugins.js";
+import * as themes from "./api/themes.js";
 import * as components from "./ui/components.js";
 import intercept from "./api/intercept.js";
 import { observe } from "./api/observe.js";
@@ -21,5 +22,6 @@ export default {
   showModal,
   voby,
   plugins,
-  components
+  themes,
+  components,
 };

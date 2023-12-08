@@ -16,6 +16,7 @@ export function appendStyle(style) {
 
 export const neptuneIdbStore = createIdbStore("__NEPTUNE_IDB_STORAGE", "__NEPTUNE_IDB_STORAGE");
 
+// store.on appears to not work upon isArray being true. This makes me a very sad toonlink.
 export function createPersistentObject(id, isArray = false) {
   // This is fucking moronic. But fine, we'll do this dumb shit just for you.
   const persistentObject = store(isArray ? { value: [] } : {});
@@ -34,6 +35,20 @@ export function createPersistentObject(id, isArray = false) {
     ),
   ];
 }
+
+export const parseManifest = (manifest) => {
+  try {
+    if (typeof manifest == "string")
+      manifest = JSON.parse(manifest.slice(manifest.indexOf("/*") + 2, manifest.indexOf("*/")));
+  } catch {
+    throw "Failed to parse manifest!";
+  }
+
+  if (!["name", "author", "description"].every((i) => typeof manifest[i] === "string"))
+    throw "Manifest doesn't contain required properties!";
+
+  return manifest;
+};
 
 export const getMediaURLFromID = (id, path = "/1280x1280.jpg") =>
   "https://resources.tidal.com/images/" + id.split("-").join("/") + path;

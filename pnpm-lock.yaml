@@ -1,4 +1,4 @@
-lockfileVersion: '6.1'
+lockfileVersion: '6.0'
 
 settings:
   autoInstallPeers: true
@@ -21,8 +21,8 @@ dependencies:
     specifier: ^1.4.3
     version: 1.4.3
   voby:
-    specifier: ^0.54.0
-    version: 0.54.0
+    specifier: ^0.57.1
+    version: 0.57.1
 
 devDependencies:
   '@rollup/plugin-node-resolve':
@@ -179,8 +179,8 @@ packages:
     resolution: {integrity: sha512-Rfkk/Mp/DL7JVje3u18FxFujQlTNR2q6QfMSMB7AvCBx91NGj/ba3kCfza0f6dVDbw7YlRf/nDrn7pQrCCyQ/w==}
     dev: true
 
-  /fsevents@2.3.2:
-    resolution: {integrity: sha512-xiqMQR4xAeHTuB9uWm+fFRcIOgKBMiOBP+eXiyT7jsgVCq1bkVygt00oASowB7EdtpOHaaPgKt812P9ab+DDKA==}
+  /fsevents@2.3.3:
+    resolution: {integrity: sha512-5xoDfX+fL7faATnagmWPpbFtwh/R77WmMMqqHGS65C3vvB0YHrgF+B1YmZ3441tMj5n63k0212XNoJwzlhffQw==}
     engines: {node: ^8.16.0 || ^10.6.0 || >=11.0.0}
     os: [darwin]
     requiresBuild: true
@@ -223,8 +223,8 @@ packages:
     resolution: {integrity: sha512-51ypPSPCoTEIN9dy5Oy+h4pShgJmPCygKfyRCISBI+JoWT/2oJvK8QPxmwv7b/p239jXrm9M1mlQbyKJ5A152g==}
     dev: true
 
-  /oby@14.3.0:
-    resolution: {integrity: sha512-ZVDpA397HjvlOsnN6zlpAOKL4bZp/7jDfhdAE0KPLVS3RMIzqzxGW+aX1JYdmZz/x8qMNFm28z1JxDhwS4IC3Q==}
+  /oby@15.1.0:
+    resolution: {integrity: sha512-2ybzrWvIXev6fvVoa0LWP/Kzul6ba8O9s20y9FMmnyoQbo59hckcc2kDmGFPaPfl97IOLL6osC3Q/ceGEHYA0g==}
     dev: false
 
   /path-parse@1.0.7:
@@ -266,7 +266,7 @@ packages:
     engines: {node: '>=14.18.0', npm: '>=8.0.0'}
     hasBin: true
     optionalDependencies:
-      fsevents: 2.3.2
+      fsevents: 2.3.3
     dev: true
 
   /safe-buffer@5.2.1:
@@ -315,9 +315,9 @@ packages:
       source-map-support: 0.5.21
     dev: true
 
-  /voby@0.54.0:
-    resolution: {integrity: sha512-hH8LXcP0QR4J6nnzfSWGD13onq7hqdc/ya1r1Bb+TxibtECYKZRO1m4HdSU4RcE7MdAaQwR5pwgd+hqXCqk2OA==}
+  /voby@0.57.1:
+    resolution: {integrity: sha512-T1OH3RbvAZoR6Du5E+JjgjWhxD4wXZJZ3sLGpKU1CAmiExieQfjTDGOS5Bl/bkQ5/TS+WRyCEtBoppi/gGrr5Q==}
     dependencies:
       htm: 3.1.1
-      oby: 14.3.0
+      oby: 15.1.0
     dev: false
