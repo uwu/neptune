@@ -8,7 +8,7 @@ export function appendStyle(style) {
   document.adoptedStyleSheets.push(sheet);
 
   return (newStyle) => {
-    if (newStyle == undefined) return document.adoptedStyleSheets = document.adoptedStyleSheets.slice(document.adoptedStyleSheets.indexOf(sheet), 1)
+    if (newStyle == undefined) return [...document.adoptedStyleSheets.slice(document.adoptedStyleSheets.indexOf(sheet), 1)]
 
     sheet.replaceSync(newStyle)
   };
