@@ -21,7 +21,7 @@ try {
   intercept("playbackControls/MEDIA_PRODUCT_TRANSITION", ([{ mediaProduct }]) => {
     Object.assign(
       currentMediaItem,
-      store.getState().content.mediaItems.get(mediaProduct.productId),
+      store.getState().content.mediaItems[mediaProduct.productId],
     );
     const vibrantColor = currentMediaItem?.item?.album?.vibrantColor;
 
