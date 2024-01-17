@@ -100,7 +100,7 @@ Object.defineProperty(window, "webpackChunk_tidal_web", {
                                 possiblyPrepareAction
                                   ?.toString?.()
                                   ?.includes?.(
-                                    `new Error("prepareAction did not return an object");`,
+                                    `.payload,..."meta"in `,
                                   ),
                             );
 
