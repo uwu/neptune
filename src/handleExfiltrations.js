@@ -12,7 +12,6 @@ import loadStyles from "./styles.js";
 */
 
 // Variables used for hooking into webpack.
-let patchedPush = false;
 let webpackObject;
 
 // Exfiltrations gained from hooking into webpack.

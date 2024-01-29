@@ -2,15 +2,22 @@ import { createStore as createIdbStore, set as idbSet, get as idbGet } from "idb
 import { store } from "voby";
 
 export function appendStyle(style) {
-  const sheet = new CSSStyleSheet();
-  sheet.replaceSync(style);
+  const styleTag = document.createElement("style");
+  styleTag.innerHTML = style;
 
-  document.adoptedStyleSheets.push(sheet);
+  // Forgive me, for I have sinned.
+  if (document.head) {
+    document.head.appendChild(styleTag);
+  } else {
+    document.addEventListener("DOMContentLoaded", () => {
+      document.head.appendChild(styleTag);
+    })
+  }
 
   return (newStyle) => {
-    if (newStyle == undefined) return [...document.adoptedStyleSheets.slice(document.adoptedStyleSheets.indexOf(sheet), 1)]
+    if (newStyle == undefined) return document.head.removeChild(styleTag);
 
-    sheet.replaceSync(newStyle)
+    styleTag.innerHTML = newStyle;
   };
 }
 
