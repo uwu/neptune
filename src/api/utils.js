@@ -59,3 +59,25 @@ export const parseManifest = (manifest) => {
 
 export const getMediaURLFromID = (id, path = "/1280x1280.jpg") =>
   "https://resources.tidal.com/images/" + id.split("-").join("/") + path;
+
+
+export function convertHexToRGB(h) {
+  let r = 0;
+  let g = 0;
+  let b = 0;
+
+  // 3 digits
+  if (h.length === 4) {
+    r = Number('0x' + h[1] + h[1]);
+    g = Number('0x' + h[2] + h[2]);
+    b = Number('0x' + h[3] + h[3]);
+
+    // 6 digits
+  } else if (h.length === 7) {
+    r = Number('0x' + h[1] + h[2]);
+    g = Number('0x' + h[3] + h[4]);
+    b = Number('0x' + h[5] + h[6]);
+  }
+
+  return `${r}, ${g}, ${b}`
+}

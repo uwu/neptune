@@ -27,7 +27,7 @@ try {
 
     if (!vibrantColor) return;
 
-    vibrantColorStyle(`:root{--track-vibrant-color:${vibrantColor}}`);
+    vibrantColorStyle(`:root{--track-vibrant-color:${vibrantColor};--track-vibrant-color-rgb:${utils.convertHexToRGB(vibrantColor)}}`);
   });
 } catch {}
 
