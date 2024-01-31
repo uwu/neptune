@@ -21,8 +21,8 @@ dependencies:
     specifier: ^1.4.3
     version: 1.4.3
   voby:
-    specifier: ^0.57.1
-    version: 0.57.1
+    specifier: ^0.57.3
+    version: 0.57.3
 
 devDependencies:
   '@rollup/plugin-node-resolve':
@@ -315,8 +315,8 @@ packages:
       source-map-support: 0.5.21
     dev: true
 
-  /voby@0.57.1:
-    resolution: {integrity: sha512-T1OH3RbvAZoR6Du5E+JjgjWhxD4wXZJZ3sLGpKU1CAmiExieQfjTDGOS5Bl/bkQ5/TS+WRyCEtBoppi/gGrr5Q==}
+  /voby@0.57.3:
+    resolution: {integrity: sha512-n+bxxgkeqe7zNqvWtV/H2sABTM7+ZU61Di4COKcB7wtkAo0tQEBYiRu/gjTdBn65c+qahAGwjPUDPcv1J0qYfg==}
     dependencies:
       htm: 3.1.1
       oby: 15.1.0
