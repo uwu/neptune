@@ -1,8 +1,12 @@
+import { store } from "voby";
 import { appendStyle, createPersistentObject, parseManifest } from "./utils.js";
 
 export const [themesStore, themesStoreReady] = createPersistentObject("NEPTUNE_THEMES", true);
 
 let updateThemeStyle = appendStyle("");
+
+// Not sure why this didn't work previously?
+store.on(themesStore, reloadThemes)
 
 function reloadThemes() {
   updateThemeStyle(themesStore.filter(t => t.enabled).map((t) => `@import url("${t.url}")`).join(";"));
@@ -13,16 +17,11 @@ export function removeTheme(url) {
     themesStore.findIndex((t) => t.url == url),
     1,
   );
-
-  // Spamming this everywhere sucks but we'll get reactive objects working a little bit better in a bit.
-  reloadThemes();
 }
 
 export function toggleTheme(url) {
   const theme = themesStore.find((t) => t.url == url);
   theme.enabled = !theme.enabled;
-
-  reloadThemes();
 }
 
 export async function importTheme(url, enabled = true) {
@@ -46,6 +45,4 @@ export async function importTheme(url, enabled = true) {
     enabled,
     url,
   });
-
-  reloadThemes();
 }
