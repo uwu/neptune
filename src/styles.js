@@ -26,7 +26,7 @@ export default function loadStyles() {
   
   .neptune-active-tab {
     color: var(--wave-color-solid-accent-fill);
-    box-shadow: 0px 2px var(--cyan-blue);
+    box-shadow: 0px 2px var(--wave-color-solid-accent-fill);
   }
   
   .neptune-card-title {
@@ -44,7 +44,7 @@ export default function loadStyles() {
 
   .neptune-switch {
     cursor: pointer;
-    background-color: var(--glass-white-5);
+    background-color: var(--wave-color-opacity-contrast-fill-ultra-thin);
     border-radius: 28px;
     display: block;
     height: 28px;
@@ -57,7 +57,7 @@ export default function loadStyles() {
   }
 
   .neptune-switch:after {
-    background-color: var(--snow-white);
+    background-color: var(--wave-color-solid-contrast-fill);
     border-radius: 50%;
     box-shadow: 0 1px 2px rgb(0 0 0 / 30%);
     content: "";
@@ -76,15 +76,15 @@ export default function loadStyles() {
   }
 
   .neptune-switch-checkbox:checked + .neptune-switch {
-    background-color: var(--cyan-blue);
-    border-color: var(--cyan-blue);
+    background-color: var(--wave-color-solid-accent-fill);
+    border-color: var(--wave-color-solid-accent-fill);
   }
 
   .neptune-text-input {
     background: transparent;
     border: 0;
-    border-bottom: 1px solid var(--glass-white-5);
-    color: var(--glass-white-2);
+    border-bottom: 1px solid var(--wave-color-opacity-contrast-fill-ultra-thin);
+    color: var(--wave-color-opacity-contrast-fill-thick);
     display: block;
     width: 100%;
     height: 40px;
@@ -92,13 +92,13 @@ export default function loadStyles() {
   }
 
   .neptune-text-input:not([readonly]):focus {
-    border-bottom-color: var(--cyan-blue);
-    color: var(--snow-white);
+    border-bottom-color: var(--wave-color-solid-accent-fill);
+    color: var(--wave-color-solid-contrast-fill);
   }
 
   .neptune-button {
     align-items: center;
-    background-color: var(--glass-white-1);
+    background-color: var(--wave-color-solid-contrast-fill);
     border-radius: 12px;
     display: inline-flex;
     height: 48px;
