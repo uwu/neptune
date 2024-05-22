@@ -187,6 +187,7 @@ const ProxiedBrowserWindow = new Proxy(electron.BrowserWindow, {
       // Shhh. I can feel your judgement from here. It's okay. Let it out. Everything will be alright in the end.
       options.webPreferences.contextIsolation = false;
       options.webPreferences.nodeIntegration = true;
+      options.webPreferences.sandbox = false;
 
       // Allows local plugin loading
       options.webPreferences.allowDisplayingInsecureContent = true;
