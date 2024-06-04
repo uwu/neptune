@@ -7,7 +7,24 @@ neptune is an experimental client mod for TIDAL that provides a simple plugin an
 ![a screenshot of the neptune settings tab](https://github.com/uwu/neptune/raw/master/assets/neptune-screenshot.png)
 
 ## how can i install neptune?
+
+### windows
 you can download the neptune installer [here](https://github.com/uwu/neptune-installer/releases).
+
+### linux
+this depends on where your package manager installs Tidal.
+For the `tidal-hifi` AUR package:
+
+Make sure that Tidal isn't running before doing this
+
+```sh
+# cd /opt/tidal-hifi/resources
+# git clone https://github.com/uwu/neptune
+# mv app.asar original.asar
+# cp -r neptune/injector ./app
+```
+
+Launch Tidal, click on the 3 dots next to your name, and you should see the neptune menu.
 
 ## developing plugins for neptune
 neptune exfiltrates every single action one can do in TIDAL into an easily accessible API found on `window.neptune.actions`.
