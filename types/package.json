@@ -1,6 +1,6 @@
 {
   "name": "neptune-types",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "TypeScript type declarations for neptune plugins",
   "homepage": "https://github.com/uwu/neptune/tree/master/types",
   "license": "MS-PL",

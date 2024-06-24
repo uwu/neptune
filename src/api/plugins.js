@@ -14,6 +14,7 @@ export const getPluginById = (id) => pluginStore.find((p) => p.id == id);
 export async function disablePlugin(id) {
   getPluginById(id).enabled = false;
   const onUnload = enabled?.[id]?.onUnload;
+  const unloadables = enabled?.[id]?.unloadables;
 
   delete enabled[id];
 
@@ -21,6 +22,8 @@ export async function disablePlugin(id) {
     await onUnload?.();
   } catch (e) {
     console.error("Failed to completely clean up neptune plugin!\n", e);
+  } finally {
+    await unloadables.forEach(u => u())
   }
 }
 
@@ -43,10 +46,14 @@ async function runPlugin(plugin) {
 
     await persistentStorageReady;
 
+    const unloadables = [];
     const pluginData = {
       id: plugin.id,
       manifest: plugin.manifest,
       storage: persistentStorage,
+      addUnloadable(callback) {
+        unloadables.push(callback)
+      }
     };
 
     const { onUnload, Settings } = await quartz(plugin.code, {
@@ -79,7 +86,7 @@ async function runPlugin(plugin) {
       ],
     });
 
-    enabled[plugin.id] = { onUnload: onUnload ?? (() => {}) };
+    enabled[plugin.id] = { onUnload: onUnload ?? (() => {}), unloadables };
     if (Settings) enabled[plugin.id].Settings = Settings;
   } catch (e) {
     await disablePlugin(plugin.id);

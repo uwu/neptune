@@ -36,7 +36,7 @@ declare module "@neptune/plugins" {
   const mod: typeof import("./api/plugins");
   export = mod;
 }
-declare module "@neptune/componoents" {
+declare module "@neptune/components" {
   const mod: typeof import("./ui/components");
   export = mod;
 }
@@ -60,6 +60,21 @@ declare module "@neptune" {
     exports: any;
   }>;
 }
+
+type JSONObject = { [x: string]: JSONValue };
+type JSONValue = string | number | boolean | JSONObject | Array<JSONValue>;
+
+declare module "@plugin" {
+  export const id: string;
+  export const manifest: {
+    name: string;
+    author: string;
+    description: string;
+  };
+  export const storage: JSONObject;
+  export const addUnloadable: (callback: () => void) => void;
+}
+
 // declare module "@neptune/store" {
 //   type Store = import("redux").Store<import("./tidal").CoreState>;
 //   export default Store;
