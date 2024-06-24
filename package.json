@@ -5,7 +5,9 @@
   "main": "src/index.js",
   "scripts": {
     "build": "rollup --config rollup.config.js",
-    "format": "prettier -wc ./src"
+    "format": "prettier -wc ./src",
+    "watch": "rollup --config rollup.config.js -w",
+    "run": "npm run build && set NEPTUNE_DIST_PATH = \"./dist\" && %localappdata%/TIDAL/TIDAL.exe"
   },
   "keywords": [],
   "author": "",
