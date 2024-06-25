@@ -196,6 +196,11 @@ export async function installPluginFromURL(url, enabled = true) {
   }
 }
 
+// Cleanup plugins on reload
+addEventListener("beforeunload", () => {
+  Object.values(enabled).forEach(p => p.onUnload());
+});
+
 // Load as early as we possibly can.
 intercept(
   "session/RECEIVED_COUNTRY_CODE",

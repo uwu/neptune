@@ -5,7 +5,13 @@ electron.ipcRenderer.invoke("NEPTUNE_BUNDLE_FETCH").then((bundle) => {
 });
 
 function createEvalScope(code) {
-  return electron.ipcRenderer.sendSync("NEPTUNE_CREATE_EVAL_SCOPE", code);
+  const { type, value } = electron.ipcRenderer.sendSync(
+    "NEPTUNE_CREATE_EVAL_SCOPE",
+    code
+  );
+  if (type == "error") throw new Error(value);
+
+  return value;
 }
 
 function getNativeValue(id, name) {
@@ -53,10 +59,19 @@ function deleteEvalScope(id) {
   return electron.ipcRenderer.sendSync("NEPTUNE_DELETE_EVAL_SCOPE", id);
 }
 
+function startDebugging() {
+  return electron.ipcRenderer.sendSync("NEPTUNE_DEBUG_SELF");
+}
+
 electron.contextBridge.exposeInMainWorld("NeptuneNative", {
   createEvalScope,
   getNativeValue,
   deleteEvalScope,
+  startDebugging,
+});
+
+electron.ipcRenderer.on("NEPTUNE_RENDERER_LOG", (ev, type, ...logs) => {
+  console[type](...logs);
 });
 
 electron.contextBridge.exposeInMainWorld("electron", {
@@ -73,7 +88,7 @@ electron.contextBridge.exposeInMainWorld("electron", {
       "sendSync",
       "postMessage",
       "sendToHost",
-    ].map((n) => [n, electron.ipcRenderer[n]])
+    ].map((n) => [n, (...args) => electron.ipcRenderer[n](...args)])
   ),
 });
 

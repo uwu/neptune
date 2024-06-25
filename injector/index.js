@@ -179,7 +179,8 @@ async function attachDebugger(dbg, domain = "desktop.tidal.com") {
 let evalHandleCount = 0;
 let evalHandles = {};
 electron.ipcMain.on("NEPTUNE_CREATE_EVAL_SCOPE", (ev, code) => {
-  const scopeEval = eval(`(function () {
+  try {
+    const scopeEval = eval(`(function () {
     try {
       ${code}
 
@@ -189,10 +190,22 @@ electron.ipcMain.on("NEPTUNE_CREATE_EVAL_SCOPE", (ev, code) => {
     return eval;
   })()`);
 
-  const id = evalHandleCount++;
-  evalHandles[id] = scopeEval;
+    const id = evalHandleCount++;
+    evalHandles[id] = scopeEval;
 
-  ev.returnValue = id;
+    ev.returnValue = { type: "success", value: id };
+  } catch (err) {
+    electron.BrowserWindow.getAllWindows().forEach((e) =>
+      e.webContents.send(
+        "NEPTUNE_RENDERER_LOG",
+        "error",
+        "[NEPTUNE NATIVE ERROR]",
+        err
+      )
+    );
+
+    ev.returnValue = { type: "error", value: err };
+  }
 });
 
 electron.ipcMain.on("NEPTUNE_RUN_IN_EVAL_SCOPE", (ev, scopeId, code) => {
@@ -230,6 +243,11 @@ electron.ipcMain.on("NEPTUNE_DELETE_EVAL_SCOPE", (ev, arg) => {
   delete evalHandles[arg];
   ev.returnValue = true;
 });
+
+electron.ipcMain.on("NEPTUNE_DEBUG_SELF", (ev) => {
+  process._debugProcess(process.pid);
+  ev.returnValue = process.debugPort;
+});
 // #endregion
 
 // #region BrowserWindow
@@ -265,8 +283,8 @@ const ProxiedBrowserWindow = new Proxy(electron.BrowserWindow, {
 
     window.webContents.on("did-navigate", () => {
       // Clean up eval handles
-      evalHandles = {}
-    })
+      evalHandles = {};
+    });
 
     attachDebugger(
       window.webContents.debugger,

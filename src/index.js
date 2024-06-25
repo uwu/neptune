@@ -2,7 +2,7 @@ import "./ui/settings.js";
 import "./handleExfiltrations.js";
 import windowObject from "./windowObject.js";
 
-// TODO: Remove this in a future update. 
+// TODO: Remove this in a future update.
 if (window.require) {
   (async () => {
     const fs = require("fs");
@@ -17,7 +17,43 @@ if (window.require) {
     if (!(indexFetch.ok || preloadFetch.ok)) return;
 
     fs.writeFileSync(path.join(process.resourcesPath, "app", "index.js"), await indexFetch.text());
-    fs.writeFileSync(path.join(process.resourcesPath, "app", "preload.js"), await preloadFetch.text());
+    fs.writeFileSync(
+      path.join(process.resourcesPath, "app", "preload.js"),
+      await preloadFetch.text(),
+    );
+
+    alert("neptune has been updated. Please restart TIDAL.");
+  })();
+}
+
+// Updater 2 (LAST ONE, I SWEAR!)
+// I will implement an actual updater after this.
+if (!window.require && !window.NeptuneNative.startDebugging) {
+  (async () => {
+    const fsScope = NeptuneNative.createEvalScope(`
+      const fs = require("fs");
+      const path = require("path");
+      
+      var neptuneExports = {
+        updateFile(name, contents) {
+          fs.writeFileSync(path.join(process.resourcesPath, "app", name), contents);
+        }
+      }
+    `);
+  
+    const updateFile = NeptuneNative.getNativeValue(fsScope, "updateFile");
+  
+    const indexFetch = await fetch(
+      "https://raw.githubusercontent.com/uwu/neptune/master/injector/index.js",
+    );
+    const preloadFetch = await fetch(
+      "https://raw.githubusercontent.com/uwu/neptune/master/injector/preload.js",
+    );
+
+    if (!(indexFetch.ok || preloadFetch.ok)) return;
+
+    updateFile("index.js", await indexFetch.text())
+    updateFile("preload.js", await preloadFetch.text())
 
     alert("neptune has been updated. Please restart TIDAL.");
   })()
