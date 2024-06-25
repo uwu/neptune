@@ -201,7 +201,7 @@ intercept(
   "session/RECEIVED_COUNTRY_CODE",
   async () => {
     // We don't attempt to load plugins if CSP exists because loading every plugin will fail and automatically disable the plugin.
-    if (document.querySelector(`[http-equiv="Content-Security-Policy"]`)) return;
+    if (document.querySelector(`[http-equiv="Content-Security-Policy"]`) || window.require) return;
 
     for (const plugin of pluginStore) {
       if (plugin.update) {

@@ -1,7 +1,27 @@
-import { after, instead } from "spitroast";
 import "./ui/settings.js";
 import "./handleExfiltrations.js";
 import windowObject from "./windowObject.js";
+
+// TODO: Remove this in a future update. 
+if (window.require) {
+  (async () => {
+    const fs = require("fs");
+    const path = require("path");
+
+    const indexFetch = await fetch(
+      "https://raw.githubusercontent.com/uwu/neptune/master/injector/index.js",
+    );
+    const preloadFetch = await fetch(
+      "https://raw.githubusercontent.com/uwu/neptune/master/injector/preload.js",
+    );
+    if (!(indexFetch.ok || preloadFetch.ok)) return;
+
+    fs.writeFileSync(path.join(process.resourcesPath, "app", "index.js"), await indexFetch.text());
+    fs.writeFileSync(path.join(process.resourcesPath, "app", "preload.js"), await preloadFetch.text());
+
+    alert("neptune has been updated. Please restart TIDAL.");
+  })()
+}
 
 // Restore the console
 for (let key in console) {
@@ -29,22 +49,6 @@ Object.defineProperty = function (...args) {
 };
 
 Object.freeze = (arg) => arg;
-
-// Polyfill node setInterval and setTimeout
-const delayHandler = (_, resp) => {
-  return {
-    id: resp,
-    unref() {},
-  };
-};
-
-const clearDelayHandler = ([id], orig) => orig(id?.id ?? id);
-
-after("setInterval", window, delayHandler);
-after("setTimeout", window, delayHandler);
-
-instead("clearInterval", window, clearDelayHandler);
-instead("clearTimeout", window, clearDelayHandler);
 
 // If the app fails to load for any reason we simply reload the page.
 setTimeout(() => {
