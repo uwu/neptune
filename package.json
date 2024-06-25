@@ -7,7 +7,7 @@
     "build": "rollup --config rollup.config.js",
     "format": "prettier -wc ./src",
     "watch": "rollup --config rollup.config.js -w",
-    "run": "npm run build && set NEPTUNE_DIST_PATH = \"./dist\" && %localappdata%/TIDAL/TIDAL.exe"
+    "run": "npm run build && set NEPTUNE_DIST_PATH=%cd%\\dist&& %LOCALAPPDATA%\\TIDAL\\TIDAL.exe"
   },
   "keywords": [],
   "author": "",
