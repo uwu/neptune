@@ -181,13 +181,9 @@ let evalHandles = {};
 electron.ipcMain.on("NEPTUNE_CREATE_EVAL_SCOPE", (ev, code) => {
   try {
     const scopeEval = eval(`(function () {
-    try {
-      ${code}
+    ${code}
 
-      return (code) => eval(code)
-    } catch {}
-
-    return eval;
+    return (code) => eval(code)
   })()`);
 
     const id = evalHandleCount++;
