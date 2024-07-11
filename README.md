@@ -20,4 +20,4 @@ To get the global Redux store's state, you can use `window.neptune.store.getStat
 
 To intercept and subscribe to actions, you can use `window.neptune.intercept("category/ACTION_NAME", ([payload]) => {})`, with the first argument being the name (or an array of names) of the action(s) to subscribe to, and the second argument being a function that gets called upon that action being ran. If you return `true` the action will automatically be cancelled.
 
-A template for making neptune plugins is available [here](https://github.com/uwu/neptune-installer).
+A template for making neptune plugins is available [here](https://github.com/uwu/neptune-template).
