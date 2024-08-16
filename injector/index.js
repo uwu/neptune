@@ -72,107 +72,27 @@ electron.app.whenReady().then(() => {
 });
 // #endregion
 
-// #region CSP removal
-async function attachDebugger(dbg, domain = "desktop.tidal.com") {
-  dbg.attach();
-  dbg.on("message", async (_, method, params, sessionId) => {
-    if (sessionId === "") sessionId = undefined;
-    if (method === "Fetch.requestPaused") {
-      console.log(params.request.url);
-      const res = await dbg.sendCommand(
-        "Fetch.getResponseBody",
-        {
-          requestId: params.requestId,
-        },
-        sessionId
-      );
-
-      let body = res.base64Encoded ? atob(res.body) : res.body;
+// #region CSP bypass
+electron.app.whenReady().then(() => {
+  electron.protocol.handle("https", async (req) => {
+    const url = new URL(req.url);
+    if (url.pathname === "/" || url.pathname == "/index.html") {
+      console.log(req.url);
+      const res = await electron.net.fetch(req, { bypassCustomProtocolHandlers: true })
+      let body = await res.text();
       body = body.replace(
         /<meta http-equiv="Content-Security-Policy" content=".*?">/,
         "<!-- neptune removed csp -->"
       );
-
-      // Add header to identify patched request in cache
-      params.responseHeaders.push({
-        name: "x-neptune",
-        value: "patched",
-      });
-
-      dbg.sendCommand(
-        "Fetch.fulfillRequest",
-        {
-          requestId: params.requestId,
-          responseCode: 200,
-          responseHeaders: params.responseHeaders,
-          body: btoa(body),
-        },
-        sessionId
-      );
-    } else if (method === "Target.attachedToTarget") {
-      const { sessionId } = params;
-
-      dbg.sendCommand(
-        "Fetch.enable",
-        {
-          patterns: [
-            {
-              urlPattern: `https://${domain}/`,
-              requestStage: "Response",
-            },
-            {
-              urlPattern: `https://${domain}/index.html`, // Workbox rewrites the URL to include index.html during initial cache build
-              requestStage: "Response",
-            },
-          ],
-        },
-        sessionId
-      );
+      return new Response(body, res);
     }
+    return electron.net.fetch(req, { bypassCustomProtocolHandlers: true });
   });
-
-  dbg.sendCommand("Target.setAutoAttach", {
-    autoAttach: true,
-    waitForDebuggerOnStart: false,
-    flatten: true,
-    filter: [{ type: "service_worker" }],
+  // Force service worker to fetch resources by clearing it's cache.
+  electron.session.defaultSession.clearStorageData({
+    storages: ["cachestorage"]
   });
-
-  // Enable interception on page itself if service worker hasn't been registered yet.
-  dbg.sendCommand("Fetch.enable", {
-    patterns: [
-      {
-        urlPattern: `https://${domain}/`,
-        requestStage: "Response",
-      },
-    ],
-  });
-
-  // Delete unpatched index cache entry if it exists
-  const { caches } = await dbg.sendCommand("CacheStorage.requestCacheNames", {
-    securityOrigin: `https://${domain}`,
-  });
-  if (caches.length !== 1) return;
-  const { cacheId } = caches[0];
-
-  const { cacheDataEntries, returnCount } = await dbg.sendCommand(
-    "CacheStorage.requestEntries",
-    {
-      cacheId,
-      pathFilter: "/index.html",
-    }
-  );
-  if (returnCount !== 1) return;
-  const entry = cacheDataEntries[0];
-
-  if (!entry.responseHeaders.some((h) => h.name === "x-neptune")) {
-    await dbg.sendCommand("CacheStorage.deleteEntry", {
-      cacheId,
-      request: entry.requestURL,
-    });
-    // TODO: Make the service worker rebuild the cache entry, otherwise offline mode will not work
-  }
-}
+});
 // #endregion
 
 // #region IPC Bullshit
@@ -282,12 +202,6 @@ const ProxiedBrowserWindow = new Proxy(electron.BrowserWindow, {
       evalHandles = {};
     });
 
-    attachDebugger(
-      window.webContents.debugger,
-      options.webPreferences?.devTools
-        ? "listen.tidal.com"
-        : "desktop.tidal.com" // tidal-hifi uses listen.tidal.com
-    );
     return window;
   },
 });
