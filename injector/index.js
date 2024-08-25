@@ -95,6 +95,18 @@ electron.app.whenReady().then(() => {
 });
 // #endregion
 
+// #region Stylesheet bypass
+electron.app.whenReady().then(() => {
+	session.defaultSession.webRequest.onHeadersReceived(({ responseHeaders, resourceType }, cb) => {
+		if (responseHeaders && resourceType === "stylesheet") {
+			const header = Object.keys(responseHeaders).find(h => h.toLowerCase() === "content-type") || "content-type";
+			responseHeaders[header] = "text/css";
+		}
+		cb({ cancel: false, responseHeaders });
+	});
+});
+// #endregion
+
 // #region IPC Bullshit
 let evalHandleCount = 0;
 let evalHandles = {};
