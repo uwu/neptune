@@ -26,22 +26,28 @@ export function toggleTheme(url) {
 
 export async function importTheme(url, enabled = true) {
   let manifest;
+  let text;
 
   try {
-    manifest = parseManifest(await (await fetch(url)).text());
+	text = await (await fetch(url)).text();
   } catch {
-    throw "Failed to parse theme manifest!";
+	throw "Failed to fetch theme!";
   }
 
-  if (!["name", "author", "description"].every((i) => typeof manifest[i] === "string"))
-    throw "Manifest doesn't contain required properties!";
-
-  const { name, author, description } = manifest;
+  try {
+    manifest = parseManifest(text);
+  } catch (e) {
+    manifest = {
+		name: url.split("/").pop(),
+		author: "Unknown",
+		description: "No description provided.",
+	}
+  }
 
   themesStore.unshift({
-    name,
-    author,
-    description,
+    name: manifest.name,
+    author: manifest.author,
+    description: manifest.description,
     enabled,
     url,
   });
