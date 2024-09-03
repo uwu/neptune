@@ -13,7 +13,9 @@ you can download the neptune installer [here](https://github.com/uwu/neptune-ins
 
 ### linux
 this depends on where your package manager installs Tidal.
-For the `tidal-hifi` AUR package:
+
+- the `tidal-hifi` AUR package: `cd /opt/tidal-hifi/resources`
+- the flatpak: `cd "$(flatpak info --show-location com.mastermindzh.tidal-hifi)/files/lib/tidal-hifi/resources/"`
 
 Make sure that Tidal isn't running before doing this
 
