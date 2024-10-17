@@ -9,7 +9,10 @@ export type CallbackFunction<ForActionTypes extends ActionType> =
    * @returns `true` to cancel dispatch
    * @returns anything else to continue
    */
-  <AT extends ForActionTypes>([payload, at]: PayloadActionTypeTuple<AT>) => true | void;
+  <AT extends ForActionTypes>([payload, at]: PayloadActionTypeTuple<AT>) =>
+    | true
+    | void
+    | Promise<void>;
 
 /**
  * intercept redux events
