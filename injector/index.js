@@ -14,9 +14,7 @@ const logger = new Proxy(console, {
 logger.log("Loading...");
 
 // #region Bundle
-const remoteUrl =
-  process.env.NEPTUNE_BUNDLE_URL ||
-  "https://raw.githubusercontent.com/uwu/neptune-builds/master/neptune.js";
+const remoteUrl = process.env.NEPTUNE_BUNDLE_URL || "https://raw.githubusercontent.com/uwu/neptune-builds/master/neptune.js";
 const localBundle = process.env.NEPTUNE_DIST_PATH;
 
 let fetchPromise; // only fetch once
@@ -32,8 +30,7 @@ if (!localBundle)
       res.on("end", () => {
         let data = Buffer.concat(chunks).toString("utf-8");
 
-        if (!data.includes("//# sourceMappingURL="))
-          data += `\n//# sourceMappingURL=${remoteUrl + ".map"}`;
+        if (!data.includes("//# sourceMappingURL=")) data += `\n//# sourceMappingURL=${remoteUrl + ".map"}`;
 
         resolve(data);
       });
@@ -48,11 +45,7 @@ const getNeptuneBundle = () =>
   !localBundle
     ? fetchPromise
     : Promise.resolve(
-        fs.readFileSync(path.join(localBundle, "neptune.js"), "utf8") +
-          `\n//# sourceMappingURL=file:////${path.join(
-            localBundle,
-            "neptune.js.map"
-          )}`
+        fs.readFileSync(path.join(localBundle, "neptune.js"), "utf8") + `\n//# sourceMappingURL=file:////${path.join(localBundle, "neptune.js.map")}`,
       );
 // #endregion
 
@@ -66,9 +59,7 @@ electron.ipcMain.handle("NEPTUNE_BUNDLE_FETCH", getNeptuneBundle);
 
 // #region Redux Devtools
 electron.app.whenReady().then(() => {
-  electron.session.defaultSession.loadExtension(
-    path.join(process.resourcesPath, "app", "redux-devtools")
-  );
+  electron.session.defaultSession.loadExtension(path.join(process.resourcesPath, "app", "redux-devtools"));
 });
 // #endregion
 
@@ -78,103 +69,44 @@ electron.app.whenReady().then(() => {
     const url = new URL(req.url);
     if (url.pathname === "/" || url.pathname == "/index.html") {
       console.log(req.url);
-      const res = await electron.net.fetch(req, { bypassCustomProtocolHandlers: true })
+      const res = await electron.net.fetch(req, { bypassCustomProtocolHandlers: true });
       let body = await res.text();
-      body = body.replace(
-        /<meta http-equiv="Content-Security-Policy" content=".*?">/,
-        "<!-- neptune removed csp -->"
-      );
+      body = body.replace(/<meta http-equiv="Content-Security-Policy" content=".*?">/, "<!-- neptune removed csp -->");
       return new Response(body, res);
     }
     return electron.net.fetch(req, { bypassCustomProtocolHandlers: true });
   });
   // Force service worker to fetch resources by clearing it's cache.
   electron.session.defaultSession.clearStorageData({
-    storages: ["cachestorage"]
+    storages: ["cachestorage"],
   });
 });
 // #endregion
 
 // #region Stylesheet bypass
 electron.app.whenReady().then(() => {
-	session.defaultSession.webRequest.onHeadersReceived(({ responseHeaders, resourceType }, cb) => {
-		if (responseHeaders && resourceType === "stylesheet") {
-			const header = Object.keys(responseHeaders).find(h => h.toLowerCase() === "content-type") || "content-type";
-			responseHeaders[header] = "text/css";
-		}
-		cb({ cancel: false, responseHeaders });
-	});
+  session.defaultSession.webRequest.onHeadersReceived(({ responseHeaders, resourceType }, cb) => {
+    if (responseHeaders && resourceType === "stylesheet") {
+      const header = Object.keys(responseHeaders).find((h) => h.toLowerCase() === "content-type") || "content-type";
+      responseHeaders[header] = "text/css";
+    }
+    cb({ cancel: false, responseHeaders });
+  });
 });
 // #endregion
 
 // #region IPC Bullshit
-let evalHandleCount = 0;
-let evalHandles = {};
-electron.ipcMain.on("NEPTUNE_CREATE_EVAL_SCOPE", (ev, code) => {
-  try {
-    const scopeEval = eval(`(function () {
-    ${code}
-
-    return (code) => eval(code)
-  })()`);
-
-    const id = evalHandleCount++;
-    evalHandles[id] = scopeEval;
-
-    ev.returnValue = { type: "success", value: id };
-  } catch (err) {
-    electron.BrowserWindow.getAllWindows().forEach((e) =>
-      e.webContents.send(
-        "NEPTUNE_RENDERER_LOG",
-        "error",
-        "[NEPTUNE NATIVE ERROR]",
-        err
-      )
-    );
-
-    ev.returnValue = { type: "error", value: err };
-  }
+const evalHandles = {};
+let scopeId = 0;
+electron.ipcMain.handle("NEPTUNE_EVAL", (_, code) => eval(code));
+electron.ipcMain.handle("NEPTUNE_INVOKE_IN_SCOPE", (_, _scopeId, expName, ...args) => evalHandles[_scopeId][expName](...args));
+electron.ipcMain.handle("NEPTUNE_CREATE_EVAL_SCOPE", (_, code, globalName) => {
+  // Extract the exports from the global and store them to be called
+  evalHandles[++scopeId] = eval(`(() => {${code};return ${globalName};})()`);
+  return scopeId;
 });
-
-electron.ipcMain.on("NEPTUNE_RUN_IN_EVAL_SCOPE", (ev, scopeId, code) => {
-  try {
-    const retVal = evalHandles[scopeId](code);
-
-    if (retVal?.then && retVal?.catch) {
-      const promiseId = "NEPTUNE_PROMISE_" + Math.random().toString().slice(2);
-      ev.returnValue = { type: "promise", value: promiseId };
-
-      try {
-        const getAllWindows = () => electron.BrowserWindow.getAllWindows();
-
-        retVal.then((v) =>
-          getAllWindows().forEach((w) =>
-            w.webContents.send(promiseId, { type: "resolve", value: v })
-          )
-        );
-
-        retVal.catch((v) =>
-          getAllWindows().forEach((w) =>
-            w.webContents.send(promiseId, { type: "reject", value: v })
-          )
-        );
-      } catch {}
-    }
-
-    ev.returnValue = { type: "success", value: retVal };
-  } catch (err) {
-    ev.returnValue = { type: "error", value: err };
-  }
-});
-
-electron.ipcMain.on("NEPTUNE_DELETE_EVAL_SCOPE", (ev, arg) => {
-  delete evalHandles[arg];
-  ev.returnValue = true;
-});
-
-electron.ipcMain.on("NEPTUNE_DEBUG_SELF", (ev) => {
-  process._debugProcess(process.pid);
-  ev.returnValue = process.debugPort;
+electron.ipcMain.handle("NEPTUNE_DELETE_EVAL_SCOPE", (_, id) => {
+  delete evalHandles[id];
 });
 // #endregion
 
@@ -185,8 +117,7 @@ const ProxiedBrowserWindow = new Proxy(electron.BrowserWindow, {
     let originalPreload;
 
     // tidal-hifi does not set the title, rely on dev tools instead.
-    const isTidalWindow =
-      options.title == "TIDAL" || options.webPreferences?.devTools;
+    const isTidalWindow = options.title == "TIDAL" || options.webPreferences?.devTools;
 
     if (isTidalWindow) {
       originalPreload = options.webPreferences?.preload;
@@ -242,12 +173,9 @@ electron.Menu.buildFromTemplate = (template) => {
 logger.log("Starting original...");
 
 let originalPath = path.join(process.resourcesPath, "app.asar");
-if (!fs.existsSync(originalPath))
-  originalPath = path.join(process.resourcesPath, "original.asar");
+if (!fs.existsSync(originalPath)) originalPath = path.join(process.resourcesPath, "original.asar");
 
-const originalPackage = require(path.resolve(
-  path.join(originalPath, "package.json")
-));
+const originalPackage = require(path.resolve(path.join(originalPath, "package.json")));
 const startPath = path.join(originalPath, originalPackage.main);
 
 require.main.filename = startPath;
