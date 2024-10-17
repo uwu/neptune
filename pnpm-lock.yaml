@@ -18,8 +18,8 @@ dependencies:
     specifier: ^1.0.1
     version: 1.0.1
   spitroast:
-    specifier: ^1.4.3
-    version: 1.4.3
+    specifier: ^2.1.4
+    version: 2.1.4
   voby:
     specifier: ^0.57.3
     version: 0.57.3
@@ -295,8 +295,8 @@ packages:
     engines: {node: '>=0.10.0'}
     dev: true
 
-  /spitroast@1.4.3:
-    resolution: {integrity: sha512-JdkzAy2tT82ahx+eEtM5ohBeHICqFln/Yzo+vPGnE5sX1LYgPHCU2qcaSIJfR/xNrhI0q+ftwFz0H2aJysv3EA==}
+  /spitroast@2.1.4:
+    resolution: {integrity: sha512-IA987I3wS8RbrKrgag+NsxLUAttrqONF7UGOL+uQFmLLXlMhZl42LomTAltBQaev0jUXIaRiqShZ3hnJYT7OCQ==}
     dev: false
 
   /supports-preserve-symlinks-flag@1.0.0:
