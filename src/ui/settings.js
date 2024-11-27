@@ -3,6 +3,7 @@ import { PluginTab } from "./pluginsTab.js";
 import { ThemesTab } from "./themesTab.js";
 import registerRoute from "../api/registerRoute.js";
 import hookContextMenu from "../api/hookContextMenu.js";
+import { pushVirtualRoute } from "../api/utils.js";
 
 let selectedTab = $(0);
 const tabs = [
@@ -45,6 +46,4 @@ registerRoute(
   </div>`,
 );
 
-hookContextMenu("USER_PROFILE", "neptune settings", () =>
-  neptune.actions.router.push({ pathname: "/neptune/settings", replace: true }),
-);
+hookContextMenu("USER_PROFILE", "neptune settings", () => pushVirtualRoute("settings"));

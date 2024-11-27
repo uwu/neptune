@@ -14,14 +14,14 @@ const replacePage = (page, component) => {
   neptunePage.appendChild(ReactiveRoot({ children: component }));
 };
 
-intercept("ROUTER_LOCATION_CHANGED", () => {
+intercept("router/NAVIGATED", () => {
   for (const page of document.getElementsByClassName("__NEPTUNE_PAGE"))
     page.parentElement.removeChild(page);
 });
 
 export default function registerRoute(path, component) {
-  return intercept("ROUTER_LOCATION_CHANGED", ([payload]) => {
-    if (payload.pathname != `/neptune/${path}`) return;
+  return intercept("router/NAVIGATED", ([payload]) => {
+    if (payload.search != `?neptuneRoute=${path}`) return;
 
     const pageNotFound = document.querySelector(pageNotFoundSelector);
     if (pageNotFound) return replacePage(pageNotFound, component);
