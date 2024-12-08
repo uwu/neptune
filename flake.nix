@@ -15,11 +15,22 @@
         {
           # Use the already existing package tidal-hifi and inject neptune in it
           tidal-hifi = prev.tidal-hifi.overrideAttrs (old: {
+            
             # Patch neptune into tidal-hifi
-            installPhase = old.installPhase or "" + ''
+            # Needing to override the full thing to get everything from the install phase
+            installPhase = ''
+              runHook preInstall
+
+              mkdir -p "$out/bin"
+              cp -R "opt" "$out"
+              cp -R "usr/share" "$out/share"
+              chmod -R g-w "$out"
+
               cp -r ${neptune-src}/injector/ $out/opt/tidal-hifi/resources/app/
               mv $out/opt/tidal-hifi/resources/app.asar $out/opt/tidal-hifi/resources/original.asar
               
+              runHook postInstall
+
             '';
           });
 
