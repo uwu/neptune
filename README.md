@@ -9,6 +9,37 @@ neptune is an experimental client mod for TIDAL that provides a simple plugin an
 ## how can i install neptune?
 you can download the neptune installer [here](https://github.com/uwu/neptune-installer/releases).
 
+### NixOS
+
+> [!WARNING]
+> TIDAL-HIFI right now is colliding with neptune when trying to login
+>
+> create a nix-shell with tidal-hifi and login once, after that you can use the neptune package
+
+you install this package as an overlay
+
+add as an input in your flakes:
+´´´nix 
+  inputs = {
+    neptune = {
+      url = "github.com:uwu/neptune";
+      inputs.nixpkgs.follows = "nixpkgs";
+    }
+  };
+´´´
+
+configure your package system to use this overlay:
+```nix
+nixpkgs.overlays = [ inputs.neptune.overlays.default ];
+```
+
+and then just add neptune as a package:
+```nix
+enivronment.systemPackages = [ pkgs.neptune ];
+```
+
+After that you can find TIDAL-HIFI as program in your system
+
 ## developing plugins for neptune
 neptune exfiltrates every single action one can do in TIDAL into an easily accessible API found on `window.neptune.actions`.
 
