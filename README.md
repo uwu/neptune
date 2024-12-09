@@ -19,14 +19,14 @@ you can download the neptune installer [here](https://github.com/uwu/neptune-ins
 you install this package as an overlay
 
 add as an input in your flakes:
-´´´nix 
+```nix 
   inputs = {
     neptune = {
       url = "github.com:uwu/neptune";
       inputs.nixpkgs.follows = "nixpkgs";
     }
   };
-´´´
+```
 
 configure your package system to use this overlay:
 ```nix
