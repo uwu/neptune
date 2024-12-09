@@ -8,8 +8,8 @@
       neptuneOverlay = final: prev: 
         let
           neptune-src = prev.fetchzip {
-            url = "https://github.com/uwu/neptune/archive/refs/heads/master.zip";
-            sha256 = "sha256-6aFIQyZwlqaiyVpZa9CVj3Hf94BJRSAKHEQl5QH/Xvw=";
+            url = "https://github.com/uwu/neptune/archive/548f93b.zip";
+            sha256 = "sha256-oI/bRjL6zjsaA8p8QTeJEB5k+SXkJqSJ/hEAltDenok=";
           };
         in
         {
