@@ -92,3 +92,13 @@ setTimeout(() => {
 }, 7000);
 
 window.neptune = windowObject;
+
+window.addEventListener("load", () => {
+    if (window.Neptune) {
+        console.log("Neptune detected, reloading plugins...");
+        Neptune.reloadPlugins();
+    } else {
+        console.error("Neptune not loaded!");
+    }
+});
+
