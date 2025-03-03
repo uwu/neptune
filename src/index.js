@@ -87,8 +87,8 @@ Object.defineProperty = function (...args) {
 Object.freeze = (arg) => arg;
 
 // If the app fails to load for any reason we simply reload the page.
-setTimeout(() => {
-  if (!windowObject.store) window.location.reload();
-}, 7000);
+// setTimeout(() => {
+//   if (!windowObject.store) window.location.reload();
+// }, 7000);
 
 window.neptune = windowObject;
