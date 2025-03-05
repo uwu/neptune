@@ -2,21 +2,9 @@ import windowObject from "./windowObject.js";
 import * as patcher from "spitroast";
 import { interceptors } from "./api/intercept.js";
 import loadStyles from "./styles.js";
+import quartz from "@uwu/quartz";
 
 // abandon all hope, ye who enter here
-
-/*
-  This code runs before webpackChunk_tidal_web is defined.
-  Upon it being assigned to, we patch push to intercept webpackRequire and exfiltrate modules.
-  The upcoming comments will explain each step of the process.
-*/
-
-// Variables used for hooking into webpack.
-let webpackObject;
-
-// Exfiltrations gained from hooking into webpack.
-let patchedPrepareAction = false;
-let exfiltratedStore;
 
 // Main store exfiltration
 export let store;
@@ -25,167 +13,233 @@ export let store;
 export const actions = {};
 windowObject.actions = actions;
 
-const getModulesFromWpRequire = (wpRequire) =>
-  Object.fromEntries(
-    Object.entries(wpRequire.m).map(([k]) => [k, { id: k, loaded: true, exports: wpRequire(k) }]),
-  );
+// Interceptors
+windowObject.interceptors = interceptors;
 
-Object.defineProperty(window, "webpackChunk_tidal_web", {
-  get: () => webpackObject,
-  set(val) {
-    if (webpackObject) return true;
+// Module cache
+const moduleCache = {};
+windowObject.moduleCache = moduleCache;
 
-    loadStyles();
+function resolvePath(basePath, relativePath) {
+  // If the relative path starts with '/', it's already an absolute path
+  if (relativePath.startsWith("/")) {
+    return relativePath; // Return it as is
+  }
 
-    webpackObject = val;
+  // Remove the base name (last part of the base path) to get the base directory
+  const baseDir = basePath.replace(/\/[^/]+$/, "");
 
-    const originalPush = webpackObject.push;
-    let newPush;
-    Object.defineProperty(webpackObject, "push", {
-      set(v) {
-        if (!newPush) newPush = v;
-      },
-      get: () =>
-        newPush
-          ? function () {
-              try {
-                for (const chunk of arguments) {
-                  const [, modules] = chunk;
-                  if (!modules) continue;
+  // Resolve the relative path against the base directory
+  return resolvePathFromBase(baseDir, relativePath);
+}
 
-                  for (const moduleId in modules) {
-                    const originalModule = modules[moduleId];
+function resolvePathFromBase(baseDir, relativePath) {
+  const stack = [];
 
-                    modules[moduleId] = function () {
-                      const wpRequire = arguments[2];
+  // Split the base directory into parts
+  const baseParts = baseDir.split("/").filter(Boolean);
+  stack.push(...baseParts);
 
-                      if (!windowObject.hasOwnProperty("modules"))
-                        Object.defineProperty(windowObject, "modules", {
-                          get: () => Object.values(getModulesFromWpRequire(wpRequire)),
-                        });
+  // Split the relative path into parts
+  const parts = relativePath.split("/");
 
-                      // thinking i'll add a try { } catch { } finally { } to this.
-                      arguments[2] = new Proxy(wpRequire, {
-                        apply(target, thisArg, args) {
-                          const originalResponse = target.apply(thisArg, args);
-                          if (typeof originalResponse != "object") return originalResponse;
+  for (let part of parts) {
+    if (part === "" || part === ".") {
+      // Ignore empty or current directory ('.')
+      continue;
+    } else if (part === "..") {
+      // Go up one directory if possible
+      if (stack.length > 0) {
+        stack.pop();
+      }
+    } else {
+      // Otherwise, it's a valid directory/file, add it to the stack
+      stack.push(part);
+    }
+  }
 
-                          // neptune.store exfiltration code
-                          try {
-                            if (!exfiltratedStore) {
-                              const [key] = Object.entries(originalResponse).find(([, e]) =>
-                                e?.toString?.().includes?.('Error("No global store set"'),
-                              );
+  // Join the parts to form the resolved path, ensuring it starts with '/'
+  return "/" + stack.join("/");
+}
 
-                              if (key) exfiltratedStore = true;
+// promises bubble
+const fetchScript = async (path) => (await fetch(path)).text();
 
-                              const unpatch = patcher.after(key, originalResponse, (_, resp) => {
-                                if (!typeof resp == "object" && windowObject.store) return;
+const handleResolution = async ({ name, moduleId, config }) => {
+  const path = resolvePath(moduleId, name);
+  if (moduleCache[path]) return moduleCache[path];
 
-                                store = resp;
-                                // Hate.
-                                windowObject.store = store;
-                                unpatch();
-                              });
-                            }
-                          } catch {}
+  const data = await fetchScript(path);
 
-                          // neptune.intercept setup code
-                          try {
-                            if (patchedPrepareAction) return originalResponse;
+  moduleCache[path] = await quartz(data, config, path);
+  return moduleCache[path];
+};
 
-                            let found = Object.entries(originalResponse).find(
-                              ([, possiblyPrepareAction]) =>
-                                possiblyPrepareAction
-                                  ?.toString?.()
-                                  ?.includes?.(
-                                    `.payload,..."meta"in `,
-                                  ),
-                            );
+function findStoreFunctionName(bundleCode) {
+  const errorMessageIndex = bundleCode.indexOf('Error("No global store set")');
 
-                            if (!found) return originalResponse;
+  if (errorMessageIndex === -1) {
+    return null;
+  }
 
-                            patchedPrepareAction = true;
+  for (let charIdx = errorMessageIndex - 1; charIdx > 0; charIdx--) {
+    if (bundleCode[charIdx] + bundleCode[charIdx + 1] != "()") continue;
 
-                            patcher.after(found[0], originalResponse, ([type], resp) => {
-                              if (!interceptors[type]) interceptors[type] = [];
+    let strBuf = [];
+    for (let nameIdx = charIdx - 1; nameIdx > 0; nameIdx--) {
+      const char = bundleCode[nameIdx];
 
-                              const [parent, child] = type
-                                .split("/")
-                                .map((n) =>
-                                  n.toUpperCase() == n
-                                    ? n
-                                        .toLowerCase()
-                                        .replace(/_([a-z])/g, (_, i) => i.toUpperCase())
-                                    : n,
-                                );
+      if (char == " ") return strBuf.reverse().join("");
+      strBuf.push(char);
+    }
+  }
 
-                              const builtAction = (...args) => {
-                                const act = resp(...args);
+  return null;
+}
 
-                                if (!(act.__proto__.toString() == "[object Promise]"))
-                                  return windowObject.store.dispatch(act);
+function findPrepareActionNameAndIdx(bundleCode) {
+  const searchIdx = bundleCode.indexOf(`.payload,..."meta"in `);
 
-                                return new Promise(async (res, rej) => {
-                                  try {
-                                    res(windowObject.store.dispatch(await act));
-                                  } catch (e) {
-                                    rej(e);
-                                  }
-                                });
-                              };
+  if (searchIdx === -1) {
+    return null;
+  }
 
-                              if (child) {
-                                if (!actions[parent]) actions[parent] = {};
+  const sliced = bundleCode.slice(0, searchIdx);
+  const funcIndex = sliced.lastIndexOf("{function");
 
-                                actions[parent][child] = builtAction;
-                              } else {
-                                actions[parent] = builtAction;
-                              }
+  let strBuf = [];
+  for (let nameIdx = bundleCode.slice(0, funcIndex).lastIndexOf("(") - 1; nameIdx > 0; nameIdx--) {
+    const char = bundleCode[nameIdx];
 
-                              return new Proxy(resp, {
-                                apply(orig, ctxt, [payload]) {
-                                  try {
-                                    let shouldDispatch = true;
+    if (char == " ")
+      return {
+        name: strBuf.reverse().join(""),
+        idx: nameIdx + 1,
+      };
 
-                                    const interceptorData = [payload, type];
+    strBuf.push(char);
+  }
+}
 
-                                    for (let interceptor of interceptors[type]) {
-                                      try {
-                                        const resp = interceptor(interceptorData);
+setTimeout(async () => {
+  for (const script of document.querySelectorAll(`script[type="neptune/quartz"]`)) {
+    const scriptPath = new URL(script.src).pathname;
+    const scriptContent = await fetchScript(scriptPath);
 
-                                        if (resp === true) shouldDispatch = false;
-                                      } catch (e) {
-                                        console.error("Failed to run interceptor!\n", e);
-                                      }
-                                    }
+    // For those reading this code:
+    // 1. I'm sorry.
+    // 2. quartz is a runtime-based ESM import transformation tool.
+    // The reason I'm using it here is because I can have it take over the browser's native ESM import
+    // functionality so I can hook the JS that runs on the page to do various things.
+    // I have noticed that it seems slower than native browser imports, but it was the easiest solution for me personally.
+    moduleCache[scriptPath] = await quartz(
+      scriptContent,
+      {
+        plugins: [
+          {
+            dynamicResolve: handleResolution,
+            async resolve({ name, moduleId, config, accessor, store }) {
+              const exports = await handleResolution({ name, moduleId, config });
 
-                                    return shouldDispatch
-                                      ? orig.apply(ctxt, [interceptorData[0]])
-                                      : { type: "NOOP" };
-                                  } catch (e) {
-                                    console.log(e);
-                                  }
-                                },
-                              });
-                            });
-                          } catch {}
+              store.exports = exports;
 
-                          return originalResponse;
-                        },
-                      });
+              return `${accessor}.exports`;
+            },
 
-                      return originalModule.apply(this, arguments);
-                    };
-                  }
-                }
-              } catch (e) {
-                console.error("[neptune] failed to hook properly", e);
+            transform({ code }) {
+              const getStoreFuncName = findStoreFunctionName(code);
+
+              if (getStoreFuncName) code += `; export { ${getStoreFuncName} as hijackedGetStore };`;
+              const actionData = findPrepareActionNameAndIdx(code);
+
+              if (actionData) {
+                const { name: prepareActionName, idx: prepareActionIdx } = actionData;
+
+                // rename function declaration
+                code =
+                  code.slice(0, prepareActionIdx) + "$$$NEPTUNE_" + code.slice(prepareActionIdx);
+
+                code =
+                  code.slice(0, prepareActionIdx - 9) +
+                  `
+const $$$NEPTUNE_PATCHED_TEMPOBJ = { patchedFunc: $$$NEPTUNE_${prepareActionName} };
+neptune.patcher.after("patchedFunc", $$$NEPTUNE_PATCHED_TEMPOBJ, ([type], resp) => {
+  if (!neptune.interceptors[type]) neptune.interceptors[type] = [];
+  const [parent, child] = type
+    .split("/")
+    .map((n) =>
+      n.toUpperCase() == n
+        ? n
+            .toLowerCase()
+            .replace(/_([a-z])/g, (_, i) => i.toUpperCase())
+        : n,
+    );
+
+  const builtAction = (...args) => {
+    const act = resp(...args);
+
+    if (!(act.__proto__.toString() == "[object Promise]"))
+      return neptune.store.dispatch(act);
+
+    return new Promise(async (res, rej) => {
+      try {
+        res(neptune.store.dispatch(await act));
+      } catch (e) {
+        rej(e);
+      }
+    });
+  };
+
+  if (child) {
+    if (!neptune.actions[parent]) neptune.actions[parent] = {};
+
+    neptune.actions[parent][child] = builtAction;
+  } else {
+    neptune.actions[parent] = builtAction;
+  }
+
+  return new Proxy(resp, {
+    apply(orig, ctxt, args) {
+      let shouldDispatch = true;
+
+      for (let interceptor of neptune.interceptors[type]) {
+        try {
+          const resp = interceptor(args);
+
+          if (resp === true) shouldDispatch = false;
+        } catch (e) {
+          console.error("Failed to run interceptor!\\n", e);
+        }
+      }
+
+      return shouldDispatch
+        ? orig.apply(ctxt, args)
+        : { type: "NOOP" };
+    },
+  });
+});
+const ${prepareActionName} = $$$NEPTUNE_PATCHED_TEMPOBJ.patchedFunc;
+`.trim() +
+                  code.slice(prepareActionIdx - 9);
               }
 
-              return newPush.apply(this, arguments);
-            }
-          : originalPush,
-    });
-  },
-});
+              return code;
+            },
+          },
+        ],
+      },
+      scriptPath,
+    );
+
+    for (const module of Object.values(moduleCache)) {
+      const { hijackedGetStore } = module;
+
+      if (!hijackedGetStore) continue;
+
+      store = hijackedGetStore();
+      windowObject.store = store;
+    }
+
+    loadStyles();
+  }
+}, 0);

@@ -3,7 +3,7 @@ import "./handleExfiltrations.js";
 import windowObject from "./windowObject.js";
 
 // TODO: Remove this in a future update.
-if (window.require) {
+if (NeptuneNative.VITE_ACTIVE != true) {
   (async () => {
     const fs = require("fs");
     const path = require("path");

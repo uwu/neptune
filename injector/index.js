@@ -81,9 +81,12 @@ electron.app.whenReady().then(() => {
       const res = await electron.net.fetch(req, { bypassCustomProtocolHandlers: true })
       let body = await res.text();
       body = body.replace(
-        /<meta http-equiv="Content-Security-Policy" content=".*?">/,
-        "<!-- neptune removed csp -->"
+        /<meta http-equiv="Content-Security-Policy"/,
+        `<meta name="neptune removed csp"`
       );
+
+      body = body.replaceAll(/<script type="module" crossorigin src="(.*?)">/g, `<script type="neptune/quartz" src="$1">`);
+
       return new Response(body, res);
     }
     return electron.net.fetch(req, { bypassCustomProtocolHandlers: true });

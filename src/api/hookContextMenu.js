@@ -11,7 +11,7 @@ export default function hookContextMenu(menuType, name, handler) {
       unob.now();
 
       const contextMenuItem = elem.cloneNode(true);
-      const contextMenuLabel = contextMenuItem.querySelector(`[class^="actionTextInner--"]`);
+      const contextMenuLabel = contextMenuItem.querySelector(`[class^="_actionTextInner_"]`);
       contextMenuLabel.innerText = name;
 
       const parentClasses = contextMenuLabel.parentElement.classList;

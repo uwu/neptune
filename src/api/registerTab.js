@@ -2,10 +2,10 @@ import registerRoute from "./registerRoute.js";
 import intercept from "./intercept.js";
 import { actions } from "../handleExfiltrations.js";
 function makeInactive(tab) {
-  tab.classList.remove(Array.from(tab.classList).find((c) => c.startsWith("activeItem--")));
+  tab.classList.remove(Array.from(tab.classList).find((c) => c.startsWith("_activeItem_")));
 }
 
-const getTabs = () => document.querySelector(`.sidebarWrapper section[class^="section--"]`);
+const getTabs = () => document.querySelector(`.sidebarWrapper section[class^="_section_"]`);
 
 // Automatically set tab to unchecked.
 intercept("ROUTER_LOCATION_CHANGED", () => {
@@ -23,7 +23,7 @@ export default function registerTab(name, path, component = () => {}) {
     const tab = tabs.children[0].cloneNode(true);
     makeInactive(tab);
 
-    tab.querySelector(`[class^="responsiveText--"]`).textContent = name;
+    tab.querySelector(`[class^="_responsiveText_"]`).textContent = name;
 
     tab.classList.add("__NEPTUNE_TAB");
 

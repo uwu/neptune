@@ -2,7 +2,7 @@ import { ReactiveRoot } from "../ui/components.js";
 import intercept from "./intercept.js";
 import { observe } from "./observe.js";
 
-const pageNotFoundSelector = `[class^="pageNotFoundError--"]`;
+const pageNotFoundSelector = `[class^="_pageNotFoundError_"]`;
 
 const replacePage = (page, component) => {
   page.style.display = "none";

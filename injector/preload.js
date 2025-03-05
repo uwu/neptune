@@ -68,6 +68,7 @@ electron.contextBridge.exposeInMainWorld("NeptuneNative", {
   getNativeValue,
   deleteEvalScope,
   startDebugging,
+  VITE_ACTIVE: true
 });
 
 electron.ipcRenderer.on("NEPTUNE_RENDERER_LOG", (ev, type, ...logs) => {
