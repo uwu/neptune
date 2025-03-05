@@ -4,7 +4,7 @@ import { observe } from "./observe.js";
 
 export default function showModal(name, component) {
   actions.modal.showReleaseNotes();
-  const unob = observe(`[class^="modalHeader_"]`, (header) => {
+  const unob = observe(`[class^="_modalHeader_"]`, (header) => {
     unob.now();
 
     header.getElementsByTagName("h4")[0].innerText = name;

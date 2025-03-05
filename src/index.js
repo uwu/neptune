@@ -2,7 +2,6 @@ import "./ui/settings.js";
 import "./handleExfiltrations.js";
 import windowObject from "./windowObject.js";
 
-
 // Updater 3
 if (NeptuneNative.VITE_ACTIVE != true) {
   (async () => {
