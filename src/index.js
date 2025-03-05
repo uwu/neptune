@@ -2,33 +2,9 @@ import "./ui/settings.js";
 import "./handleExfiltrations.js";
 import windowObject from "./windowObject.js";
 
-// TODO: Remove this in a future update.
+
+// Updater 3
 if (NeptuneNative.VITE_ACTIVE != true) {
-  (async () => {
-    const fs = require("fs");
-    const path = require("path");
-
-    const indexFetch = await fetch(
-      "https://raw.githubusercontent.com/uwu/neptune/master/injector/index.js",
-    );
-    const preloadFetch = await fetch(
-      "https://raw.githubusercontent.com/uwu/neptune/master/injector/preload.js",
-    );
-    if (!(indexFetch.ok || preloadFetch.ok)) return;
-
-    fs.writeFileSync(path.join(process.resourcesPath, "app", "index.js"), await indexFetch.text());
-    fs.writeFileSync(
-      path.join(process.resourcesPath, "app", "preload.js"),
-      await preloadFetch.text(),
-    );
-
-    alert("neptune has been updated. Please restart TIDAL.");
-  })();
-}
-
-// Updater 2 (LAST ONE, I SWEAR!)
-// I will implement an actual updater after this.
-if (!window.require && !window.NeptuneNative.startDebugging) {
   (async () => {
     const fsScope = NeptuneNative.createEvalScope(`
       const fs = require("fs");
