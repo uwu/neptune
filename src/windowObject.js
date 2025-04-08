@@ -13,6 +13,8 @@ import showModal from "./api/showModal.js";
 // TODO: AWFUL VOMIT VOMIT KILL MURDER DIE KILL KILL DIE MURDER VOMIT
 import { store } from "./handleExfiltrations.js";
 
+import quartz from "@uwu/quartz";
+
 let currentMediaItem = {};
 
 try {
@@ -45,4 +47,5 @@ export default {
   themes,
   components,
   currentMediaItem,
+  quartz
 };
