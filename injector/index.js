@@ -49,10 +49,7 @@ const getNeptuneBundle = () =>
     ? fetchPromise
     : Promise.resolve(
         fs.readFileSync(path.join(localBundle, "neptune.js"), "utf8") +
-          `\n//# sourceMappingURL=file:////${path.join(
-            localBundle,
-            "neptune.js.map"
-          )}`
+          `\n//# sourceMappingURL=file:////${path.join(localBundle, "neptune.js.map")}`,
       );
 // #endregion
 
@@ -67,7 +64,7 @@ electron.ipcMain.handle("NEPTUNE_BUNDLE_FETCH", getNeptuneBundle);
 // #region Redux Devtools
 electron.app.whenReady().then(() => {
   electron.session.defaultSession.loadExtension(
-    path.join(process.resourcesPath, "app", "redux-devtools")
+    path.join(process.resourcesPath, "app", "redux-devtools"),
   );
 });
 // #endregion
@@ -78,14 +75,17 @@ electron.app.whenReady().then(() => {
     const url = new URL(req.url);
     if (url.pathname === "/" || url.pathname == "/index.html") {
       console.log(req.url);
-      const res = await electron.net.fetch(req, { bypassCustomProtocolHandlers: true })
+      const res = await electron.net.fetch(req, { bypassCustomProtocolHandlers: true });
       let body = await res.text();
       body = body.replace(
         /<meta http-equiv="Content-Security-Policy"/,
-        `<meta name="neptune removed csp"`
+        `<meta name="neptune removed csp"`,
       );
 
-      body = body.replaceAll(/<script type="module" crossorigin src="(.*?)">/g, `<script type="neptune/quartz" src="$1">`);
+      body = body.replaceAll(
+        /<script type="module" crossorigin src="(.*?)">/g,
+        `<script type="neptune/quartz" src="$1">`,
+      );
 
       return new Response(body, res);
     }
@@ -93,20 +93,22 @@ electron.app.whenReady().then(() => {
   });
   // Force service worker to fetch resources by clearing it's cache.
   electron.session.defaultSession.clearStorageData({
-    storages: ["cachestorage"]
+    storages: ["cachestorage"],
   });
 });
 // #endregion
 
 // #region Stylesheet bypass
 electron.app.whenReady().then(() => {
-	session.defaultSession.webRequest.onHeadersReceived(({ responseHeaders, resourceType }, cb) => {
-		if (responseHeaders && resourceType === "stylesheet") {
-			const header = Object.keys(responseHeaders).find(h => h.toLowerCase() === "content-type") || "content-type";
-			responseHeaders[header] = "text/css";
-		}
-		cb({ cancel: false, responseHeaders });
-	});
+  session.defaultSession.webRequest.onHeadersReceived(({ responseHeaders, resourceType }, cb) => {
+    if (responseHeaders && resourceType === "stylesheet") {
+      const header =
+        Object.keys(responseHeaders).find((h) => h.toLowerCase() === "content-type") ||
+        "content-type";
+      responseHeaders[header] = "text/css";
+    }
+    cb({ cancel: false, responseHeaders });
+  });
 });
 // #endregion
 
@@ -127,12 +129,7 @@ electron.ipcMain.on("NEPTUNE_CREATE_EVAL_SCOPE", (ev, code) => {
     ev.returnValue = { type: "success", value: id };
   } catch (err) {
     electron.BrowserWindow.getAllWindows().forEach((e) =>
-      e.webContents.send(
-        "NEPTUNE_RENDERER_LOG",
-        "error",
-        "[NEPTUNE NATIVE ERROR]",
-        err
-      )
+      e.webContents.send("NEPTUNE_RENDERER_LOG", "error", "[NEPTUNE NATIVE ERROR]", err),
     );
 
     ev.returnValue = { type: "error", value: err };
@@ -152,14 +149,14 @@ electron.ipcMain.on("NEPTUNE_RUN_IN_EVAL_SCOPE", (ev, scopeId, code) => {
 
         retVal.then((v) =>
           getAllWindows().forEach((w) =>
-            w.webContents.send(promiseId, { type: "resolve", value: v })
-          )
+            w.webContents.send(promiseId, { type: "resolve", value: v }),
+          ),
         );
 
         retVal.catch((v) =>
           getAllWindows().forEach((w) =>
-            w.webContents.send(promiseId, { type: "reject", value: v })
-          )
+            w.webContents.send(promiseId, { type: "reject", value: v }),
+          ),
         );
       } catch {}
     }
@@ -188,8 +185,7 @@ const ProxiedBrowserWindow = new Proxy(electron.BrowserWindow, {
     let originalPreload;
 
     // tidal-hifi does not set the title, rely on dev tools instead.
-    const isTidalWindow =
-      options.title == "TIDAL" || options.webPreferences?.devTools;
+    const isTidalWindow = options.title == "TIDAL" || options.webPreferences?.devTools;
 
     if (isTidalWindow) {
       originalPreload = options.webPreferences?.preload;
@@ -245,12 +241,9 @@ electron.Menu.buildFromTemplate = (template) => {
 logger.log("Starting original...");
 
 let originalPath = path.join(process.resourcesPath, "app.asar");
-if (!fs.existsSync(originalPath))
-  originalPath = path.join(process.resourcesPath, "original.asar");
+if (!fs.existsSync(originalPath)) originalPath = path.join(process.resourcesPath, "original.asar");
 
-const originalPackage = require(path.resolve(
-  path.join(originalPath, "package.json")
-));
+const originalPackage = require(path.resolve(path.join(originalPath, "package.json")));
 const startPath = path.join(originalPath, originalPackage.main);
 
 require.main.filename = startPath;
