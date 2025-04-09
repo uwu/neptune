@@ -191,6 +191,9 @@ const ProxiedBrowserWindow = new Proxy(electron.BrowserWindow, {
     // tidal-hifi does not set the title, rely on dev tools instead.
     const isTidalWindow = options.title == "TIDAL" || options.webPreferences?.devTools;
 
+    // Improve memory limits
+    options.webPreferences.nodeOptions = "--max-old-space-size=8192";
+
     if (isTidalWindow) {
       originalPreload = options.webPreferences?.preload;
       // We replace the preload instead of using setPreloads because of some
