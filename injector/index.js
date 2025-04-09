@@ -61,6 +61,10 @@ electron.ipcMain.on("NEPTUNE_ORIGINAL_PRELOAD", (event) => {
 electron.ipcMain.handle("NEPTUNE_BUNDLE_FETCH", getNeptuneBundle);
 // #endregion
 
+// #region App Switches
+electron.app.commandLine.appendSwitch("remote-allow-origins", "http://localhost:9222");
+// #endregion
+
 // #region Redux Devtools
 electron.app.whenReady().then(() => {
   electron.session.defaultSession.loadExtension(
