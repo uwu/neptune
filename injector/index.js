@@ -79,7 +79,6 @@ electron.app.whenReady().then(() => {
   electron.protocol.handle("https", async (req) => {
     const url = new URL(req.url);
     if (url.pathname === "/" || url.pathname == "/index.html") {
-      console.log(req.url);
       const res = await electron.net.fetch(req, { bypassCustomProtocolHandlers: true });
       let body = await res.text();
       body = body.replace(
