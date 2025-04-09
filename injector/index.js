@@ -62,6 +62,7 @@ electron.ipcMain.handle("NEPTUNE_BUNDLE_FETCH", getNeptuneBundle);
 // #endregion
 
 // #region App Switches
+// Allow debugging from remote origins (e.g., Chrome DevTools over localhost)
 electron.app.commandLine.appendSwitch("remote-allow-origins", "http://localhost:9222");
 // #endregion
 
@@ -193,6 +194,7 @@ const ProxiedBrowserWindow = new Proxy(electron.BrowserWindow, {
 
     // Improve memory limits
     options.webPreferences.nodeOptions = "--max-old-space-size=8192";
+    options.webPreferences.smoothScrolling = true;
 
     if (isTidalWindow) {
       originalPreload = options.webPreferences?.preload;
