@@ -1,7 +1,9 @@
 ![neptune](https://github.com/uwu/neptune/raw/master/assets/banner.svg)
 
 ## what is neptune?
-neptune is an experimental client mod for TIDAL that provides a simple plugin and theme system.
+neptune was an experimental client mod for TIDAL that provides a simple plugin and theme system.
+
+i have no interest in maintaining software that nobody wants to contribute to. if you want to make your own thing, i highly prefer that you commit to it.
 
 ## screenshot(s)
 ![a screenshot of the neptune settings tab](https://github.com/uwu/neptune/raw/master/assets/neptune-screenshot.png)
