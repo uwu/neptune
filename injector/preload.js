@@ -5,10 +5,7 @@ electron.ipcRenderer.invoke("NEPTUNE_BUNDLE_FETCH").then((bundle) => {
 });
 
 function createEvalScope(code) {
-  const { type, value } = electron.ipcRenderer.sendSync(
-    "NEPTUNE_CREATE_EVAL_SCOPE",
-    code
-  );
+  const { type, value } = electron.ipcRenderer.sendSync("NEPTUNE_CREATE_EVAL_SCOPE", code);
   if (type == "error") throw new Error(value);
 
   return value;
@@ -16,21 +13,16 @@ function createEvalScope(code) {
 
 function getNativeValue(id, name) {
   if (
-    electron.ipcRenderer.sendSync(
-      "NEPTUNE_RUN_IN_EVAL_SCOPE",
-      id,
-      `typeof neptuneExports.${name}`
-    ).value == "function"
+    electron.ipcRenderer.sendSync("NEPTUNE_RUN_IN_EVAL_SCOPE", id, `typeof neptuneExports.${name}`)
+      .value == "function"
   )
     return (...args) => {
       funcReturn = electron.ipcRenderer.sendSync(
         "NEPTUNE_RUN_IN_EVAL_SCOPE",
         id,
         `neptuneExports.${name}(${args
-          .map((arg) =>
-            typeof arg != "function" ? JSON.stringify(arg) : arg.toString()
-          )
-          .join(",")})`
+          .map((arg) => (typeof arg != "function" ? JSON.stringify(arg) : arg.toString()))
+          .join(",")})`,
       );
 
       if (funcReturn.type == "promise") {
@@ -48,11 +40,7 @@ function getNativeValue(id, name) {
       return funcReturn.value;
     };
 
-  return electron.ipcRenderer.sendSync(
-    "NEPTUNE_RUN_IN_EVAL_SCOPE",
-    id,
-    `neptuneExports.${name}`
-  );
+  return electron.ipcRenderer.sendSync("NEPTUNE_RUN_IN_EVAL_SCOPE", id, `neptuneExports.${name}`);
 }
 
 function deleteEvalScope(id) {
@@ -68,7 +56,7 @@ electron.contextBridge.exposeInMainWorld("NeptuneNative", {
   getNativeValue,
   deleteEvalScope,
   startDebugging,
-  VITE_ACTIVE: true
+  VITE_ACTIVE: true,
 });
 
 electron.ipcRenderer.on("NEPTUNE_RENDERER_LOG", (ev, type, ...logs) => {
@@ -89,12 +77,10 @@ electron.contextBridge.exposeInMainWorld("electron", {
       "sendSync",
       "postMessage",
       "sendToHost",
-    ].map((n) => [n, (...args) => electron.ipcRenderer[n](...args)])
+    ].map((n) => [n, (...args) => electron.ipcRenderer[n](...args)]),
   ),
 });
 
-const originalPreload = electron.ipcRenderer.sendSync(
-  "NEPTUNE_ORIGINAL_PRELOAD"
-);
+const originalPreload = electron.ipcRenderer.sendSync("NEPTUNE_ORIGINAL_PRELOAD");
 
 if (originalPreload) require(originalPreload);

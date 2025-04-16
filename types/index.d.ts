@@ -17,6 +17,7 @@ declare const neptune: {
     loaded: boolean;
     exports: any;
   }>;
+  quartz: typeof import("@uwu/quartz").default;
 };
 interface Window {
   neptune: typeof neptune;
