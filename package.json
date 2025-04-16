@@ -14,7 +14,7 @@
   "license": "MS-Pl",
   "dependencies": {
     "@cumjar/websmack": "^1.2.0",
-    "@uwu/quartz": "^1.5.0",
+    "@uwu/quartz": "^1.5.1",
     "idb-keyval": "^6.2.1",
     "quartz-plugin-url-import": "^1.0.1",
     "spitroast": "^2.1.6",

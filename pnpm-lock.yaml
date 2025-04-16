@@ -12,8 +12,8 @@ importers:
         specifier: ^1.2.0
         version: 1.2.0
       '@uwu/quartz':
-        specifier: ^1.5.0
-        version: 1.5.0
+        specifier: ^1.5.1
+        version: 1.5.1
       idb-keyval:
         specifier: ^6.2.1
         version: 6.2.1
@@ -99,8 +99,8 @@ packages:
   '@types/resolve@1.20.2':
     resolution: {integrity: sha512-60BCwRFOZCQhDncwQdxxeOEEkbc5dIMccYLwbxsS4TUNeVECQ/pBJ0j09mrHOl/JJvpRPGwO9SvE4nR2Nb/a4Q==}
 
-  '@uwu/quartz@1.5.0':
-    resolution: {integrity: sha512-28uK+pDkvoERQwyBvuMP6r5WTpIKdVmsejBviGfnmZkLaPBuMVxxiXd26GqtB0Szy5nerYUcwyqonQD793IIIg==}
+  '@uwu/quartz@1.5.1':
+    resolution: {integrity: sha512-rtlCwvfpEKaxt66AMMDPYq0Ep0HGwdzffxL7LnfRoO//OaDSYiWIXW07Bv+T6O7JpqhZuohQumKzG0hiY3IuSQ==}
 
   acorn@8.14.0:
     resolution: {integrity: sha512-cl669nCJTZBsL97OF4kUQm5g5hC2uihk0NxY3WENAC0TYdILVkAyHymAntgxGkl7K+t0cXIrH5siy5S4XkFycA==}
@@ -266,7 +266,7 @@ snapshots:
 
   '@types/resolve@1.20.2': {}
 
-  '@uwu/quartz@1.5.0':
+  '@uwu/quartz@1.5.1':
     dependencies:
       es-module-lexer: 1.6.0
 
